@@ -1,7 +1,7 @@
 const djs = require('discord.js');
 const fs = require('fs');
 const client = new djs.Client({
-	intents: ['Guilds', 'GuildMessages','MessageContent'].map(r => djs.IntentsBitField.Flags[r]),
+	intents: ['Guilds', 'GuildMessages', 'MessageContent'].map(r => djs.IntentsBitField.Flags[r]),
 });
 // 'GuildMembers'
 const settings = require('./settings.json');
@@ -23,75 +23,65 @@ class Country {
 		return this.army + Math.floor(this.army * (this.tank / 50));
 	}
 
-	/**
-	 * Calculates the result of a war between an attacker and a defender.
-	 * @param {Attacker} attacker - The attacking entity.
-	 * @param {Defender} defender - The defending entity.
-	 * @returns {Object} - An object containing the winner, loser, and casualties of the war.
-	 */
-static getWarResult(attacker, defender) {
-	const attackerScore = attacker.getWarScore();
-	const defenderScore = defender.getWarScore() * 1.2;
-	const totalScore = attackerScore + defenderScore;
-	const rng = Math.floor(Math.random() * totalScore);
-	const atkLoses = attacker.applyattackerWarCasualties(attacker, defender);
-	const defLoses = defender.applydefenderWarCasualties(defender, attacker);
-	return {
-		winner: rng < attackerScore ? attacker : defender,
-		loser: rng < attackerScore ? defender : attacker,
-		atkLoses,
-		defLoses,
-	};
-}
+	static getWarResult(attacker, defender) {
+		const attackerScore = attacker.getWarScore();
+		const defenderScore = defender.getWarScore() * 1.1; //nerfed from 20% to 10%
+		const totalScore = attackerScore + defenderScore;
+		const rng = Math.floor(Math.random() * totalScore);
+		const atkLoses = attacker.applyattackerWarCasualties(attacker, defender);
+		const defLoses = defender.applydefenderWarCasualties(defender, attacker);
+		return { //returns this to wherever func is called
+			winner: rng < attackerScore ? attacker : defender, // if the random number is less than the attacker's score, attacker wins
+			loser: rng < attackerScore ? defender : attacker, // assigns loser same as above
+			atkLoses, //casualties
+			defLoses, //casualties 
+		};
+	}
 
-applyattackerWarCasualties(attacker, defender, casualties) {
-	const attackerScore = attacker.getWarScore();
-	const defenderScore = defender.getWarScore() * 1.2;
-	if (attackerScore / defenderScore < 1) {
-		casualties = Math.floor(Math.random() * 0.07 * this.army + 0.1 * this.army);
-	} 
-	else { 
-		casualties = Math.floor(Math.random() * 0.07 * this.army + 0.1 * this.army *((1) / (attackerScore / defenderScore)));
+	applyattackerWarCasualties(attacker, defender, casualties) {
+		const attackerScore = attacker.getWarScore();
+		const defenderScore = defender.getWarScore() * 1.1;
+		if (attackerScore / defenderScore < 1) { //if attacker has less warscore then the defender
+			casualties = Math.floor(Math.random() * 0.07 * this.army + 0.1 * this.army);
+		}
+		else {
+			casualties = Math.floor(Math.random() * 0.07 * this.army + 0.1 * this.army * ((0.8) / (attackerScore / defenderScore)));
+		}
+		if (casualties < 1) casualties = 1;
+		this.army -= casualties;
+		return casualties;
 	}
-	if (casualties < 1) {
-		casualties = 1;
-	}
-	this.army -= casualties;
-	return casualties;
-}
 
-applydefenderWarCasualties (defender, attacker, casualties) {
-	const attackerScore = attacker.getWarScore();
-	const defenderScore = defender.getWarScore() * 1.2;
-	if (defenderScore / attackerScore < 1) {
-		casualties = Math.floor(Math.random() * 0.04 * this.army + 0.1 * this.army);
-	} 
-	else {
-		casualties = Math.floor(Math.random() * 0.04 * this.army + 0.1 * this.army * (1) / (defenderScore / attackerScore))
+	applydefenderWarCasualties(defender, attacker, casualties) {
+		const attackerScore = attacker.getWarScore();
+		const defenderScore = defender.getWarScore() * 1.1;
+		if (defenderScore / attackerScore < 1) {
+			casualties = Math.floor(Math.random() * 0.04 * this.army + 0.1 * this.army);
+		}
+		else {
+			casualties = Math.floor(Math.random() * 0.04 * this.army + 0.1 * this.army * (1) / (defenderScore / attackerScore));
+		}
+		if (casualties < 1) casualties = 1;
+		this.army -= casualties;
+		return casualties;
 	}
-	if (casualties < 1 && this.army >= 1) {
-		casualties = 1;
-	}
-	this.army -= casualties;
-	return casualties;
-}
 }
 
 class Game {
-		constructor() {
-				this.countries = require('./countries/countries-1933.js').countries.map(c => new Country(...c));
-				this.started = false;
-		}
+	constructor() {
+		this.countries = require('./countries/countries-1933.js').countries.map(c => new Country(...c));
+		this.started = false;
+	}
 
-		start(countriesFile) {
-				this.countries = require(`./countries/${countriesFile}`).countries.map(c => new Country(...c));
-				this.started = true;
-		}
+	start(countriesFile) {
+		this.countries = require(`./countries/${countriesFile}`).countries.map(c => new Country(...c));
+		this.started = true;
+	}
 
-		end() {
-				this.started = false;
-				this.countries = require('./countries/countries-1933.js').countries.map(c => new Country(...c));
-		}
+	end() {
+		this.started = false;
+		this.countries = require('./countries/countries-1933.js').countries.map(c => new Country(...c));
+	}
 
 	assignCountry(pid, country) {
 		const c = this.countries.find(c => c.country === country);
@@ -124,21 +114,60 @@ const games = {};
 
 //Money Interval Manager
 setInterval(async () => {
-		for (const guild of Object.keys(games)) {
-				const game = games[guild];
-				if (game.started) {
-						game.countries.forEach(c => {
-								if (/*c.pid &&*/ c.active) {
-										c.money += ((c.industry / 20) - (c.tank * client.tankUpkeep[guild] + c.army * client.armyUpkeep[guild]));
-										//console.log(`${c.country} has gained $${c.industry / 20} and lost $$(c.tank * client.tankUpkeep[guild] + c.army * client.armyUpkeep[guild]) resulting in a total of ((c.industry / 20) - (c.tank * client.tankUpkeep[guild] + c.army * client.armyUpkeep[guild]))`);
-								}
-						});
-				} else {
-						console.log('Game not started in this server!');
+	for (const guild of Object.keys(games)) {
+		const game = games[guild];
+		if (game.started) {
+			game.countries.forEach(c => {
+				if (c.pid) {
+					c.money += ((c.industry / 20) - (c.tank * client.tankUpkeep[guild] + c.army * client.armyUpkeep[guild]));
+					//console.log(`${c.country} has gained $${c.industry / 20} and lost $$(c.tank * client.tankUpkeep[guild] + c.army * client.armyUpkeep[guild]) resulting in a total of ((c.industry / 20) - (c.tank * client.tankUpkeep[guild] + c.army * client.armyUpkeep[guild]))`);
 				}
+				else {
+					c.money += ((c.industry / 20) - (c.tank * client.tankUpkeep[guild] + c.army * client.armyUpkeep[guild]));
+					aiSpend(c, guild, client); // NEW
+				}
+			});
+		} else {
+			console.log('Game not started in this server!');
 		}
-		client.interval = Date.now();
+	}
+	client.interval = Date.now();
 }, 1000 * 60 * 60 * settings.moneyIntervalInHours);
+
+function aiSpend(country, guild, client) {
+	const tankCost = client.tankCost[guild] || 20;
+
+	// keep looping until no purchase is possible
+	let affordable = true;
+	while (affordable) {
+		affordable = false;
+
+		// 1. Try industry once
+		if (country.money >= 10) {
+			country.money -= 10;
+			country.industry += 20;
+			affordable = true;
+		}
+
+		// 2. Try army once
+		if (country.money >= 5) {
+			country.money -= 5;
+			country.army += 1;
+			affordable = true;
+		}
+
+		// 3. Try tank once
+		if (country.money >= tankCost) {
+			country.money -= tankCost;
+			country.tank += 1;
+			affordable = true;
+		}
+	}
+}
+
+
+module.exports.aiSpend = aiSpend;
+
 
 //SaveGame Manager
 setInterval(async () => {
@@ -154,6 +183,48 @@ setInterval(async () => {
 		}
 	}
 }, 1000 * 60 * settings.saveGameInMinutes);
+
+// Track last processed paycheck month for each guild
+client.lastPaycheckMonth = {};
+
+// Monthly paycheck trigger
+setInterval(async () => {
+	for (const guildId of Object.keys(games)) {
+		const game = games[guildId];
+		if (!game.started) continue;
+
+		const startYear = parseInt(client.yearStart[guildId]);
+		const msDiff = Date.now() - client.gameStart[guildId];
+		const minutesPerMonth = client.minutesPerMonth[guildId];
+		const monthsPassed = Math.floor(msDiff / (1000 * 60 * Number(minutesPerMonth)));
+
+		const currentMonthIndex = monthsPassed % 12;
+		const quarterMonths = [0, 3, 6, 9]; // Jan, Apr, Jul, Oct (0-based index)
+
+		if (quarterMonths.includes(currentMonthIndex)) {
+			// Only fire once per transition
+			if (client.lastPaycheckMonth[guildId] !== currentMonthIndex) {
+				console.log(`Triggering paycheck for guild ${guildId} in month index ${currentMonthIndex}`);
+
+				// Give paychecks
+				game.countries.forEach(c => {
+					if (c.pid) {
+						c.money += (c.industry / 20) - (c.tank * client.tankUpkeep[guildId] + c.army * client.armyUpkeep[guildId]);
+					} else {
+						c.money += (c.industry / 20) - (c.tank * client.tankUpkeep[guildId] + c.army * client.armyUpkeep[guildId]);
+						aiSpend(c, guildId, client);
+					}
+				});
+
+				client.lastPaycheckMonth[guildId] = currentMonthIndex; // remember we paid
+			}
+		} else {
+			// Reset so next quarter month will trigger properly
+			client.lastPaycheckMonth[guildId] = null;
+		}
+	}
+}, 1000 * 60); // check every minute
+
 
 //Commands handler
 const files = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
@@ -207,5 +278,6 @@ client.on('messageCreate', async msg => {
 		await msg.reply({ content: `There was an error while executing this command!\n${err}` });
 	}
 });
+
 
 client.login(settings.token);
