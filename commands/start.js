@@ -8,13 +8,9 @@ module.exports.interaction = async (interaction, game) => {
 	const tankUpkeep = interaction.options.getNumber('tank-upkeep');
 	const armyUpkeep = interaction.options.getNumber('army-upkeep');
 	const minutesPerMonth = interaction.options.getNumber('minutes-per-month') || settings.minutesPerMonth;
-	const validMinutes = [0.5, 15, 30, 45, 60, 90, 120, 150, 180, 240];
 	if (!countriesFile.endsWith('.js')) return interaction.editReply('Invalid file format.');
 	if (game.started) return interaction.editReply('The game has already started.');
 	game.start(countriesFile);
-	if (!validMinutes.includes(minutesPerMonth)) {
-		return interaction.editReply('The amount of minutes needs to be one of the options: (15, 30, 45, 60, 90, 120, 150, 180, or 240).');
-	}
 	interaction.client.gameStart[interaction.guild.id] = Date.now();
 	interaction.client.yearStart[interaction.guild.id] = countriesFile.split('-')[1].split('.')[0];
 	interaction.client.tankCost[interaction.guild.id] = tankCost;

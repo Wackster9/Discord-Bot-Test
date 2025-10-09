@@ -21,7 +21,7 @@ module.exports.interaction = async (interaction, game, Country) => {
 		.setColor(settings.color)
 		.setFooter({ text: `Created by ${interaction.member.displayName}`, iconURL: interaction.member.displayAvatarURL() })
 		.setTitle(`${country.country} ${country.flag}`)
-		.setDescription(`You have created a new country. It is now claimable and interactable with for the rest of the game.`);
+		.setDescription(`You have committed an act of god.`);
 
 	await interaction.editReply({ embeds: [embed] });
 };
@@ -32,8 +32,9 @@ module.exports.application_command = () => {
 			.setName('create-country')
 			.setDescription('Add a new country to the game')
 			.setDefaultMemberPermissions(djs.PermissionsBitField.Flags.Administrator)
-			.addStringOption(option => option.setName('country').setDescription('The name of the country').setRequired(true))
-			.addStringOption(option => option.setName('flag').setDescription('The flag of the country').setRequired(true))
+			.addStringOption(option => option.setName('country').setDescription('do not type türkiye').setRequired(true))
+			.addStringOption(option => option.setName('flag').setDescription('Thoust banner').setRequired(true))
+			.addStringOption(option => option.setName('type').setDescription('The rank of the country (minor, medium, etc)').setRequired(true))
 			// .addStringOption(option =>
 			// 	option
 			// 		.setName('type')

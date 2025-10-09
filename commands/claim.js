@@ -18,7 +18,7 @@ module.exports.interaction = async (interaction, game) => {
 	game.assignCountry(interaction.user.id, c.country);
 	await interaction.editReply(`You have claimed the ${c.country} ${c.flag}.`);
 };
-module.exports.button = async interaction => {};
+module.exports.button = async interaction => { };
 module.exports.application_command = () => {
 	return new djs.SlashCommandBuilder()
 		.setName('claim')

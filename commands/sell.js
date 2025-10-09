@@ -5,24 +5,19 @@ module.exports.interaction = async (interaction, game) => {
 	const subcommand = interaction.options.getSubcommand();
 	let amount = interaction.options.getInteger('amount');
 	const country = game.getPlayer(interaction.user.id);
-	if (!game.started) return interaction.editReply('The game has not started yet.');
-	if (!country) return interaction.editReply('You have not claimed a country yet.');
-	if (!country.active) return interaction.editReply('Your country is inactive.');
-	if (amount < 1) return interaction.editReply('You must sell at least 1.');
+	if (!game.started) return interaction.editReply('Quit being a quickshot there aint no game yet.');
+	if (!country) return interaction.editReply('What army? You have not claimed a country yet.');
+	if (!country.active) return interaction.editReply('How Did We Get Here? Seriously, this isnt supposed to be possible. What did you do.');
+	if (amount < 1) return interaction.editReply('No, you cannot make a ponzi scheme by selling zero army.');
 	let cost = 0;
 	let resource = '';
 	switch (subcommand) {
-		case 'industry':
-			cost = (amount * settings.industryCost * 2) / 3;
-			resource = 'industry';
-			amount *= 100;
-			break;
 		case 'army':
-			cost = (amount * settings.armyCost * 2) / 3;
+			cost = (amount * settings.armyCost * 2) / 5;
 			resource = 'army';
 			break;
 		case 'tank':
-			cost = (amount * interaction.client.tankCost[interaction.guild.id] * 2) / 3;
+			cost = (amount * interaction.client.tankCost[interaction.guild.id] * 2) / 5;
 			resource = 'tank';
 			break;
 	}
@@ -49,23 +44,17 @@ module.exports.button = async interaction => {};
 module.exports.application_command = () => {
 	return new djs.SlashCommandBuilder()
 		.setName('sell')
-		.setDescription("Sell your resources for 2/3's of their original price.")
-		.addSubcommand(subcommand =>
-			subcommand
-				.setName('industry')
-				.setDescription('Sell industry.')
-				.addIntegerOption(option => option.setName('amount').setDescription('The amount of industry to sell.').setRequired(true)),
-		)
+		.setDescription("Sell army or tanks for 2/5ths of their original price. Elite bargaining.")
 		.addSubcommand(subcommand =>
 			subcommand
 				.setName('army')
-				.setDescription('Sell army')
+				.setDescription('Millions must be unemployed')
 				.addIntegerOption(option => option.setName('amount').setDescription('The amount of army to sell.').setRequired(true)),
 		)
 		.addSubcommand(subcommand =>
 			subcommand
 				.setName('tank')
-				.setDescription('Sell tanks')
+				.setDescription('Reverse Blitzkrieg')
 				.addIntegerOption(option => option.setName('amount').setDescription('The amount of tanks to sell.').setRequired(true)),
 		);
 };

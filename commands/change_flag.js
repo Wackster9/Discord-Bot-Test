@@ -19,10 +19,10 @@ module.exports.interaction = async (interaction, game) => {
 
   await interaction.editReply({ embeds: [embed] });
 };
-module.exports.button = async interaction => {};
+module.exports.button = async interaction => { };
 module.exports.application_command = () => {
   return new djs.SlashCommandBuilder()
-    .setName('change_flag')
+    .setName('change-flag')
     .setDescription('change the flag of your country')
     .addStringOption(option =>
       option

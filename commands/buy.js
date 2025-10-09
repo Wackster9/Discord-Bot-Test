@@ -5,10 +5,10 @@ module.exports.interaction = async (interaction, game) => {
 	const subcommand = interaction.options.getSubcommand();
 	let amount = interaction.options.getInteger('amount');
 	const country = game.getPlayer(interaction.user.id);
-	if (!game.started) return interaction.editReply('The game has not started yet.');
-	if (!country) return interaction.editReply('You have not claimed a country yet.');
-	if (!country.active) return interaction.editReply('Your country is inactive.');
-	if (amount < 1) return interaction.editReply('You must buy at least 1.');
+	if (!game.started) return interaction.editReply('Quit being a quickshot there aint no game yet.');
+	if (!country) return interaction.editReply('You are not Jeffrey Bezos, claim a country to buy something.');
+	if (!country.active) return interaction.editReply('*moons you*');
+	if (amount < 1) return interaction.editReply('Ghostbuying before GTA 6');
 	let cost = 0;
 	let resource = '';
 
@@ -16,7 +16,7 @@ module.exports.interaction = async (interaction, game) => {
 		case 'industry':
 			cost = amount * settings.industryCost;
 			resource = 'industry';
-			amount *= 100;
+			amount *= 20;
 			break;
 		case 'army':
 			cost = amount * settings.armyCost;
@@ -47,7 +47,7 @@ module.exports.interaction = async (interaction, game) => {
 		);
 	await interaction.editReply({ embeds: [embed] });
 };
-module.exports.button = async interaction => {};
+module.exports.button = async interaction => { };
 module.exports.application_command = () => {
 	return new djs.SlashCommandBuilder()
 		.setName('buy')
@@ -55,7 +55,7 @@ module.exports.application_command = () => {
 		.addSubcommand(subcommand =>
 			subcommand
 				.setName('industry')
-				.setDescription('Buy industry with money.')
+				.setDescription('Buy industry with money. (1=20 industry for 10 money.)')
 				.addIntegerOption(option => option.setName('amount').setDescription('The amount of industry to buy.').setRequired(true)),
 		)
 		.addSubcommand(subcommand =>

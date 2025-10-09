@@ -31,35 +31,27 @@ module.exports.interaction = async (interaction, game) => {
 		const country = sorted[i];
 		switch (subcommand) {
 			case 'industry':
-				description += `${i + 1}. ${country.country}  ${country.flag}  ${country.pid ? `<@${country.pid}> ` : ''}-  ${
-					country.industry
-				} industry\n`;
+				description += `${i + 1}. ${country.country}  ${country.flag}  ${country.pid ? `<@${country.pid}> ` : ''}-  ${country.industry
+					} industry\n`;
 				break;
 			case 'military_power':
-				description += `${i + 1}. ${country.country}  ${country.flag}  ${country.pid ? `<@${country.pid}> ` : ''}-  ${
-					country.army + Math.floor(country.army * (country.tank / 50))
-				} War Score ( ${
-					country.army
-				} army, ${
-					country.tank
-				} tanks)\n`;
+				description += `${i + 1}. ${country.country}  ${country.flag}  ${country.pid ? `<@${country.pid}> ` : ''}-  ${country.army + Math.floor(country.army * (country.tank / 50))
+					} War Score ( ${country.army
+					} army, ${country.tank
+					} tanks)\n`;
 				break;
 			case 'army':
-				description += `${i + 1}. ${country.country}  ${country.flag}  ${country.pid ? `<@${country.pid}> ` : ''}-  ${
-					country.army
-				} army, ${
-					country.tank
-				} tanks\n`;
+				description += `${i + 1}. ${country.country}  ${country.flag}  ${country.pid ? `<@${country.pid}> ` : ''}-  ${country.army
+					} army, ${country.tank
+					} tanks\n`;
 				break;
 			case 'tank':
-				description += `${i + 1}. ${country.country}  ${country.flag}  ${country.pid ? `<@${country.pid}> ` : ''}-  ${
-					country.tank
-				} tanks\n`;
+				description += `${i + 1}. ${country.country}  ${country.flag}  ${country.pid ? `<@${country.pid}> ` : ''}-  ${country.tank
+					} tanks\n`;
 				break;
 			case 'money':
-				description += `${i + 1}. ${country.country}  ${country.flag}  ${country.pid ? `<@${country.pid}> ` : ''}-  ${
-					country.money
-				} money\n`;
+				description += `${i + 1}. ${country.country}  ${country.flag}  ${country.pid ? `<@${country.pid}> ` : ''}-  ${country.money
+					} money\n`;
 				break;
 		}
 	}
@@ -70,7 +62,7 @@ module.exports.interaction = async (interaction, game) => {
 		.setFooter({ text: `Requested by ${interaction.member.displayName}`, iconURL: interaction.member.displayAvatarURL() });
 	await interaction.editReply({ embeds: [embed] });
 };
-module.exports.button = async interaction => {};
+module.exports.button = async interaction => { };
 module.exports.application_command = () => {
 	return new djs.SlashCommandBuilder()
 		.setName('top')
