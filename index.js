@@ -135,36 +135,43 @@ setInterval(async () => {
 }, 1000 * 60 * 60 * settings.moneyIntervalInHours);
 
 function aiSpend(country, guild, client) {
-	const tankCost = client.tankCost[guild] || 20;
+    const tankCost = client.tankCost[guild] || 20;
+    const armyCost = 5; 
+    const industryCost = 10;
 
-	// keep looping until no purchase is possible
-	let affordable = true;
-	while (affordable) {
-		affordable = false;
+    // Get the server's priorities, or use a default if none are set.
+    const priorities = client.aiPriorities[guild] || { army: 50, industry: 40, tank: 10 };
+    
+    let moneyToSpend = country.money;
 
-		// 1. Try industry once
-		if (country.money >= 10) {
-			country.money -= 10;
-			country.industry += 20;
-			affordable = true;
-		}
+    // --- SPENDING PHASE ---
+    // The order here matters. It will spend on army first, then industry, then tank.
+    
+    // 1. army spend
+    const armyBudget = moneyToSpend * (priorities.army / 100);
+    const numToBuyArmy = Math.floor(armyBudget / armyCost);
+    if (numToBuyArmy > 0) {
+        country.army += numToBuyArmy;
+        country.money -= numToBuyArmy * armyCost;
+    }
 
-		// 2. Try army once
-		if (country.money >= 5) {
-			country.money -= 5;
-			country.army += 1;
-			affordable = true;
-		}
-
-		// 3. Try tank once
-		if (country.money >= tankCost) {
-			country.money -= tankCost;
-			country.tank += 1;
-			affordable = true;
-		}
-	}
+    // 2. buy ind
+    // country.money will be lower 
+    const industryBudget = country.money * (priorities.industry / 100);
+    const numToBuyIndustry = Math.floor(industryBudget / industryCost);
+    if (numToBuyIndustry > 0) {
+        country.industry += numToBuyIndustry * 20; 
+        country.money -= numToBuyIndustry * industryCost;
+    }
+    
+    // 3. yummy tankz
+    const tankBudget = country.money * (priorities.tank / 100);
+    const numToBuyTanks = Math.floor(tankBudget / tankCost);
+    if (numToBuyTanks > 0) {
+        country.tank += numToBuyTanks;
+        country.money -= numToBuyTanks * tankCost;
+    }
 }
-
 
 module.exports.aiSpend = aiSpend;
 
