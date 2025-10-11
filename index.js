@@ -17,6 +17,9 @@ class Country {
 		this.type = type;
 		this.flag = flag || '🏳️';
 		this.active = true;
+ this.attackBuff = 1.0; // 1.0 means 100%, or no buff
+ this.defenseBuff = 1.0; // Same here
+ this.aiPriorities = null; 
 	}
 
 	getWarScore() {
