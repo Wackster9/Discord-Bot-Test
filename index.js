@@ -25,7 +25,7 @@ class Country {
 
 	static getWarResult(attacker, defender) {
 		const attackerScore = attacker.getWarScore();
-		const defenderScore = defender.getWarScore() * 1.1; //nerfed from 20% to 10%
+		const defenderScore = defender.getWarScore() * 1.2; //nerfed from 20% to 10%
 		const totalScore = attackerScore + defenderScore;
 		const rng = Math.floor(Math.random() * totalScore);
 		const atkLoses = attacker.applyattackerWarCasualties(attacker, defender);
@@ -40,7 +40,7 @@ class Country {
 
 	applyattackerWarCasualties(attacker, defender, casualties) {
 		const attackerScore = attacker.getWarScore();
-		const defenderScore = defender.getWarScore() * 1.1;
+		const defenderScore = defender.getWarScore() * 1.2;
 		if (attackerScore / defenderScore < 1) { //if attacker has less warscore then the defender
 			casualties = Math.floor(Math.random() * 0.07 * this.army + 0.1 * this.army);
 		}
@@ -54,7 +54,7 @@ class Country {
 
 	applydefenderWarCasualties(defender, attacker, casualties) {
 		const attackerScore = attacker.getWarScore();
-		const defenderScore = defender.getWarScore() * 1.1;
+		const defenderScore = defender.getWarScore() * 1.2;
 		if (defenderScore / attackerScore < 1) {
 			casualties = Math.floor(Math.random() * 0.04 * this.army + 0.1 * this.army);
 		}
