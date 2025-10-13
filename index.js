@@ -253,6 +253,7 @@ client.once('ready', async () => {
 	client.tankUpkeep = {};
 	client.armyUpkeep = {};
 	client.minutesPerMonth = {};
+ client.aiPriorities = {};
 });
 
 client.on('interactionCreate', async interaction => {
