@@ -1,30 +1,31 @@
 const djs = require('discord.js');
 
 module.exports.interaction = async (interaction, game) => {
+    // This part is for the peasants. It's a private "get lost" message.
     if (!interaction.member.permissions.has(djs.PermissionFlagsBits.ManageGuild)) {
         return interaction.reply({ content: 'Only admins can apply buffs.', ephemeral: true });
     }
 
-    await interaction.deferReply({ ephemeral: true });
+    // This part is for the admins. It's a public announcement.
+    await interaction.deferReply(); // No longer ephemeral
 
     const countryName = interaction.options.getString('country');
     const type = interaction.options.getString('type');
     const value = interaction.options.getNumber('value');
-    const uses = interaction.options.getInteger('uses'); // This will be null if not provided
+    const uses = interaction.options.getInteger('uses');
 
     const country = game.getCountry(countryName);
 
     if (!country) {
-        return interaction.editReply('Invalid country specified.');
+        return interaction.editReply('Invalid country specified.'); // Now public
     }
     if (value <= 0) {
-        return interaction.editReply('Buff value must be a positive number (e.g., 1.2 for a 20% buff).');
+        return interaction.editReply('Buff value must be a positive number (e.g., 1.2 for a 20% buff).'); // Now public
     }
 
     let replyMessage = '';
 
     if (uses) {
-        // This is a TEMPORARY buff
         const buffObject = { value, uses };
         if (type === 'attack') {
             country.tempAttackBuffs.push(buffObject);
@@ -33,29 +34,22 @@ module.exports.interaction = async (interaction, game) => {
         }
         replyMessage = `Applied a temporary ${type} buff of ${value}x to ${country.country} for ${uses} uses.`;
     } else {
-        // This is a PERMANENT buff
-        if (type === 'attack') {
-            country.attackBuff = value;
+        if (value === 1) { // We're keeping the reset logic because it's smart.
+             if (type === 'attack') {
+                country.attackBuff = 1.0;
+            } else {
+                country.defenseBuff = 1.0;
+            }
+            replyMessage = `Reset the permanent ${type} buff for ${country.country} to default (1.0x).`;
         } else {
-            country.defenseBuff = value;
+            if (type === 'attack') {
+                country.attackBuff = value;
+            } else {
+                country.defenseBuff = value;
+            }
+            replyMessage = `Set the permanent ${type} buff for ${country.country} to ${value}x.`;
         }
-        replyMessage = `Set the permanent ${type} buff for ${country.country} to ${value}x.`;
     }
 
-    await interaction.editReply(replyMessage);
-};
-
-module.exports.application_command = () => {
-    return new djs.SlashCommandBuilder()
-        .setName('apply-buff')
-        .setDescription('Applies a permanent or temporary buff to a country.')
-        .addStringOption(option => option.setName('country').setDescription('The country to buff.').setRequired(true))
-        .addStringOption(option =>
-            option.setName('type')
-                .setDescription('The type of buff.')
-                .setRequired(true)
-                .addChoices({ name: 'Attack', value: 'attack' }, { name: 'Defense', value: 'defense' })
-        )
-        .addNumberOption(option => option.setName('value').setDescription('The buff multiplier (e.g., 1.25 for +25%).').setRequired(true))
-        .addIntegerOption(option => option.setName('uses').setDescription('Number of uses (wars). Leave blank for a permanent buff.').setRequired(false));
+    await interaction.editReply(replyMessage); // Now public
 };
