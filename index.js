@@ -252,14 +252,37 @@ setInterval(async () => {
 				console.log(`Triggering paycheck for guild ${guildId} in month index ${currentMonthIndex}`);
 
 				// Give paychecks
-				game.countries.forEach(c => {
-					if (c.pid) {
-						c.money += (c.industry / 20) - (c.tank * client.tankUpkeep[guildId] + c.army * client.armyUpkeep[guildId]);
-					} else {
-						c.money += (c.industry / 20) - (c.tank * client.tankUpkeep[guildId] + c.army * client.armyUpkeep[guildId]);
-						aiSpend(c, guildId, client);
-					}
-				});
+const events = client.economicEvents[guildId] || [];
+
+game.countries.forEach(c => {
+    // 1. Calculate the base paycheck
+    const basePaycheck = (c.industry / 20) - (c.tank * client.tankUpkeep[guildId] + c.army * client.armyUpkeep[guildId]);
+
+    // 2. Determine the total economic modifier for this country
+    let finalModifier = 1.0;
+    events.forEach(event => {
+        const isCountryInList = event.countries.includes(c.country);
+        const shouldBeAffected = event.isExclusionList ? !isCountryInList : isCountryInList;
+        
+        if (shouldBeAffected) {
+            finalModifier *= event.modifier;
+        }
+    });
+
+    // 3. Apply the modified paycheck
+    c.money += basePaycheck * finalModifier;
+
+    // AI still needs to spend money if it's an AI country
+    if (!c.pid) {
+        aiSpend(c, guildId, client);
+    }
+});
+
+// After everyone has been paid, update the events
+if (events.length > 0) {
+    events.forEach(event => event.paychecksRemaining--);
+    client.economicEvents[guildId] = events.filter(event => event.paychecksRemaining > 0);
+}  
 
 				client.lastPaycheckMonth[guildId] = currentMonthIndex; // remember we paid
 			}
@@ -289,6 +312,7 @@ client.once('ready', async () => {
 	client.armyUpkeep = {};
 	client.minutesPerMonth = {};
  client.aiPriorities = {};
+client.economicEvents = {}; 
 });
 
 client.on('interactionCreate', async interaction => {
