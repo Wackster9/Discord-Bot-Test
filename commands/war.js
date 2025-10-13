@@ -15,6 +15,17 @@ module.exports.interaction = async (interaction, game) => {
 	//Keep the comments if you want to allow players to fight unclaimed countries
 
 	const result = p.constructor.getWarResult(p, c);
+// ... right after 'const result = p.constructor.getWarResult(p, c);'
+
+// DECREMENT AND CLEAN UP BUFFS
+// Attacker's buffs
+p.tempAttackBuffs.forEach(buff => buff.uses--);
+p.tempAttackBuffs = p.tempAttackBuffs.filter(buff => buff.uses > 0);
+
+// Defender's buffs
+c.tempDefenseBuffs.forEach(buff => buff.uses--);
+c.tempDefenseBuffs = c.tempDefenseBuffs.filter(buff => buff.uses > 0);
+
 	const embed = new djs.EmbedBuilder()
 		.setTimestamp()
 		.setColor(settings.color)
