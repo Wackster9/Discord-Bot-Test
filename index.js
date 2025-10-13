@@ -26,20 +26,46 @@ class Country {
 		return this.army + Math.floor(this.army * (this.tank / 50));
 	}
 
+static calculateWinChance(attacker, defender) {
+    // The defender gets a 10% defensive bonus now, applied directly to their score.
+    const attackerScore = attacker.getWarScore() * attacker.attackBuff; // We're adding the buffs here now!
+    const defenderScore = defender.getWarScore() * 1.1 * defender.defenseBuff;
+
+    // This can happen if the defender's army is 0. Avoid dividing by zero.
+    if (defenderScore <= 0) return 0.93; // Attacker almost certainly wins.
+
+    const ratio = attackerScore / defenderScore;
+
+    // --- THE FANCY MATH PART ---
+    // These constants control the shape of the curve.
+    const MAX_WIN_CHANCE = 0.93; // The 93% cap zhe wanted.
+    const MIDPOINT = 0.50; // The win chance when scores are equal (ratio = 1.0).
+    const STEEPNESS = 0.8; // How quickly the odds ramp up. Higher = steeper.
+
+    // The arctangent function gives us a nice S-curve from -PI/2 to +PI/2.
+    // We scale and shift it to fit our desired win chance range [0.07, 0.93].
+    const spread = MAX_WIN_CHANCE - MIDPOINT;
+    let winChance = MIDPOINT + spread * (2 / Math.PI) * Math.atan(STEEPNESS * (ratio - 1));
+    
+    // Just in case, clamp the final value to be safe.
+    return Math.max(1 - MAX_WIN_CHANCE, Math.min(MAX_WIN_CHANCE, winChance));
+}
+
 	static getWarResult(attacker, defender) {
-		const attackerScore = attacker.getWarScore();
-		const defenderScore = defender.getWarScore() * 1.2;
-		const totalScore = attackerScore + defenderScore;
-		const rng = Math.floor(Math.random() * totalScore);
-		const atkLoses = attacker.applyattackerWarCasualties(attacker, defender);
-		const defLoses = defender.applydefenderWarCasualties(defender, attacker);
-		return { //returns this to wherever func is called
-			winner: rng < attackerScore ? attacker : defender, // if the random number is less than the attacker's score, attacker wins
-			loser: rng < attackerScore ? defender : attacker, // assigns loser same as above
-			atkLoses, //casualties
-			defLoses, //casualties 
-		};
-	}
+    const attackerWinChance = Country.calculateWinChance(attacker, defender);
+    const rng = Math.random(); // This gives a random number between 0.0 and 1.0
+
+    const atkLoses = attacker.applyattackerWarCasualties(attacker, defender);
+    const defLoses = defender.applydefenderWarCasualties(defender, attacker);
+    
+    return {
+        winner: rng < attackerWinChance ? attacker : defender,
+        loser: rng < attackerWinChance ? defender : attacker,
+        atkLoses,
+        defLoses,
+        winChance: (attackerWinChance * 100).toFixed(1) // Let's return the odds for fun
+    };
+}
 
 	applyattackerWarCasualties(attacker, defender, casualties) {
 		const attackerScore = attacker.getWarScore();
