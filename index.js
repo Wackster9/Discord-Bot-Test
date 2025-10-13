@@ -27,9 +27,9 @@ class Country {
 	}
 
 static calculateWinChance(attacker, defender) {
-    // The defender gets a 10% defensive bonus now, applied directly to their score.
+    // The defender gets a 20% defensive bonus now, applied directly to their score.
     const attackerScore = attacker.getWarScore() * attacker.attackBuff; // We're adding the buffs here now!
-    const defenderScore = defender.getWarScore() * 1.1 * defender.defenseBuff;
+    const defenderScore = defender.getWarScore() * 1.2 * defender.defenseBuff;
 
     // This can happen if the defender's army is 0. Avoid dividing by zero.
     if (defenderScore <= 0) return 0.93; // Attacker almost certainly wins.
@@ -169,8 +169,10 @@ function aiSpend(country, guild, client) {
     const industryCost = 10;
 
     // Get the server's priorities, or use a default if none are set.
-    const priorities = client.aiPriorities[guild] || { army: 50, industry: 40, tank: 10 };
-    
+    const priorities = 
+    country.aiPriorities || 
+    client.aiPriorities[guild] || 
+    { army: 50, industry: 40, tank: 10 };
     let moneyToSpend = country.money;
 
     // --- SPENDING PHASE ---
@@ -290,7 +292,7 @@ client.on('interactionCreate', async interaction => {
 		if (interaction.isCommand()) {
 			const command = commands[interaction.commandName];
 			if (command?.interaction) {
-				await command.interaction(interaction, game, Country);
+				await command.interaction(interaction, game, Country, client);
 			}
 		} else if (interaction.isButton()) {
 			const command = commands[interaction.customId.split('-')[0]];
