@@ -28,7 +28,7 @@ class Country {
 
 	static getWarResult(attacker, defender) {
 		const attackerScore = attacker.getWarScore();
-		const defenderScore = defender.getWarScore() * 1.2; //nerfed from 20% to 10%
+		const defenderScore = defender.getWarScore() * 1.2;
 		const totalScore = attackerScore + defenderScore;
 		const rng = Math.floor(Math.random() * totalScore);
 		const atkLoses = attacker.applyattackerWarCasualties(attacker, defender);
