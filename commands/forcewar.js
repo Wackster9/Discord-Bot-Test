@@ -15,6 +15,14 @@ module.exports.interaction = async (interaction, game) => {
 	if (attacker.country === defender.country) return interaction.editReply('Thats the same country.');
 
 	const result = attacker.constructor.getWarResult(attacker, defender);
+// DECREMENT AND CLEAN UP BUFFS
+// Attacker's buffs
+attacker.tempAttackBuffs.forEach(buff => buff.uses--);
+attacker.tempAttackBuffs = attacker.tempAttackBuffs.filter(buff => buff.uses > 0);
+
+// Defender's buffs
+defender.tempDefenseBuffs.forEach(buff => buff.uses--);
+defender.tempDefenseBuffs = defender.tempDefenseBuffs.filter(buff => buff.uses > 0);
 	const embed = new djs.EmbedBuilder()
 		.setTimestamp()
 		.setColor(settings.color)
