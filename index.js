@@ -20,7 +20,9 @@ class Country {
  this.attackBuff = 1.0; // 1.0 means 100%, or no buff
  this.defenseBuff = 1.0; // Same here
  this.aiPriorities = null; 
-	}
+	this.tempAttackBuffs = []; // e.g., [{ value: 1.25, uses: 3 }]
+this.tempDefenseBuffs = []; // e.g., [{ value: 1.50, uses: 1 }] 
+}
 
 	getWarScore() {
 		return this.army + Math.floor(this.army * (this.tank / 50));
@@ -28,8 +30,13 @@ class Country {
 
 static calculateWinChance(attacker, defender) {
     // The defender gets a 20% defensive bonus now, applied directly to their score.
-    const attackerScore = attacker.getWarScore() * attacker.attackBuff; // We're adding the buffs here now!
-    const defenderScore = defender.getWarScore() * 1.2 * defender.defenseBuff;
+    // Calculate the total combined buff for the attacker
+const totalAttackBuff = attacker.tempAttackBuffs.reduce((total, buff) => total * buff.value, attacker.attackBuff);
+const attackerScore = attacker.getWarScore() * totalAttackBuff;
+
+// Calculate the total combined buff for the defender
+const totalDefenseBuff = defender.tempDefenseBuffs.reduce((total, buff) => total * buff.value, defender.defenseBuff);
+const defenderScore = defender.getWarScore() * 1.2 * totalDefenseBuff; // The 1.2 is the base defense bonus
 
     // This can happen if the defender's army is 0. Avoid dividing by zero.
     if (defenderScore <= 0) return 0.93; // Attacker almost certainly wins.
