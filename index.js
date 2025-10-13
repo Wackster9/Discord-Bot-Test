@@ -103,4 +103,156 @@ class Game {
 	}
 	getCountry(country) {
 		if (!isNaN(country)) return this.countries[country - 1];
-		return 
+				return this.countries.find(c => c.country.toLowerCase() === country.toLowerCase());
+	}
+	abandonCountry(pid) {
+		const c = this.countries.find(c => c.pid === pid && c.active);
+		if (c) { c.pid = ''; return c; }
+	}
+	getPlayer(id) {
+		return this.countries.find(c => c.pid === id && c.active);
+	}
+}
+
+const games = {};
+
+function aiSpend(country, guild, client) {
+    const tankCost = client.tankCost[guild] || 20;
+    const armyCost = 5; 
+    const industryCost = 10;
+    const priorities = country.aiPriorities || client.aiPriorities[guild] || { army: 50, industry: 40, tank: 10 };
+    let moneyToSpend = country.money;
+    const armyBudget = moneyToSpend * (priorities.army / 100);
+    const numToBuyArmy = Math.floor(armyBudget / armyCost);
+    if (numToBuyArmy > 0) {
+        country.army += numToBuyArmy;
+        country.money -= numToBuyArmy * armyCost;
+    }
+    const industryBudget = country.money * (priorities.industry / 100);
+    const numToBuyIndustry = Math.floor(industryBudget / industryCost);
+    if (numToBuyIndustry > 0) {
+        country.industry += numToBuyIndustry * 20; 
+        country.money -= numToBuyIndustry * industryCost;
+    }
+    const tankBudget = country.money * (priorities.tank / 100);
+    const numToBuyTanks = Math.floor(tankBudget / tankCost);
+    if (numToBuyTanks > 0) {
+        country.tank += numToBuyTanks;
+        country.money -= numToBuyTanks * tankCost;
+    }
+}
+
+//SaveGame Manager
+setInterval(async () => {
+	for (const guild of Object.keys(games)) {
+		const game = games[guild];
+		if (game.started) {
+			const saveObj = { others: {}, game: [] };
+			saveObj.game = game.countries;
+			saveObj.others = { started: client.gameStart[guild], yearStart: client.yearStart[guild], tankCost: client.tankCost[guild], tankUpkeep: client.tankUpkeep[guild], armyUpkeep: client.armyUpkeep[guild], minutesPerMonth: client.minutesPerMonth[guild] };
+			fs.writeFileSync(`./saves/${guild}.json`, JSON.stringify(saveObj));
+			console.log(`Saved game in ${guild}`);
+		}
+	}
+}, 1000 * 60 * settings.saveGameInMinutes);
+
+// Track last processed paycheck month for each guild
+client.lastPaycheckMonth = {};
+
+// Monthly paycheck trigger
+setInterval(async () => {
+	for (const guildId of Object.keys(games)) {
+		const game = games[guildId];
+		if (!game || !game.started || !client.gameStart[guildId]) continue;
+
+		const msDiff = Date.now() - client.gameStart[guildId];
+		const minutesPerMonth = client.minutesPerMonth[guildId];
+		const monthsPassed = Math.floor(msDiff / (1000 * 60 * Number(minutesPerMonth)));
+
+		const currentMonthIndex = monthsPassed % 12;
+		const quarterMonths = [0, 3, 6, 9]; 
+
+		if (quarterMonths.includes(currentMonthIndex)) {
+			if (client.lastPaycheckMonth[guildId] !== currentMonthIndex) {
+				console.log(`Triggering paycheck for guild ${guildId} in month index ${currentMonthIndex}`);
+                
+                const events = client.economicEvents[guildId] || [];
+
+                game.countries.forEach(c => {
+                    const basePaycheck = (c.industry / 20) - (c.tank * (client.tankUpkeep[guildId] || 0) + c.army * (client.armyUpkeep[guildId] || 0));
+                    let finalModifier = 1.0;
+                    events.forEach(event => {
+                        const isCountryInList = event.countries.includes(c.country);
+                        const shouldBeAffected = event.isExclusionList ? !isCountryInList : isCountryInList;
+                        if (shouldBeAffected) { finalModifier *= event.modifier; }
+                    });
+                    c.money += basePaycheck * finalModifier;
+                    if (!c.pid) { aiSpend(c, guildId, client); }
+                });
+
+                if (events.length > 0) {
+                    events.forEach(event => event.paychecksRemaining--);
+                    client.economicEvents[guildId] = events.filter(event => event.paychecksRemaining > 0);
+                }  
+				client.lastPaycheckMonth[guildId] = currentMonthIndex;
+			}
+		} else {
+			client.lastPaycheckMonth[guildId] = null;
+		}
+	}
+}, 1000 * 60);
+
+//Commands handler
+const files = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
+const commands = {};
+files.forEach(file => {
+	commands[file.slice(0, -3)] = require(`./commands/${file}`);
+});
+
+client.once('ready', async () => {
+	console.log(`Logged in as ${client.user.tag}!`);
+	await require('./deploy-commands.js')(client);
+	client.gameStart = {};
+	client.yearStart = {};
+	client.tankCost = {};
+	client.tankUpkeep = {};
+	client.armyUpkeep = {};
+	client.minutesPerMonth = {};
+    client.aiPriorities = {};
+    client.economicEvents = {}; 
+});
+
+client.on('interactionCreate', async interaction => {
+	if (!interaction.member) return;
+	try {
+		if (!games[interaction.guild.id]) games[interaction.guild.id] = new Game();
+		const game = games[interaction.guild.id];
+		if (interaction.isCommand()) {
+			const command = commands[interaction.commandName];
+			if (command?.interaction) {
+				await command.interaction(interaction, game, Country, client);
+			}
+		} else if (interaction.isButton()) {
+			const command = commands[interaction.customId.split('-')[0]];
+			if (command?.button) {
+				await command.button(interaction);
+			}
+		}
+	} catch (err) {
+		const err_payload = { content: `There was an error while executing this command!\n${err}`, ephemeral: true };
+		console.log(err);
+		if (interaction.replied || interaction.deferred) interaction.followUp(err_payload);
+		else await interaction.reply(err_payload);
+	}
+});
+
+client.on('messageCreate', async msg => {
+	if (!msg.member) return;
+	if (msg.author.bot) return;
+	try { } catch (err) {
+		console.log(err);
+		await msg.reply({ content: `There was an error while executing this command!\n${err}` });
+	}
+});
+
+client.login(settings.token); 
