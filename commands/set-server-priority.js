@@ -9,7 +9,7 @@ module.exports.interaction = async (interaction, game, Country, client) => { // 
     // IMPORTANT! Update the interactionCreate event in your main file to pass `client` to commands.
     // It should look like this: await command.interaction(interaction, game, Country, client);
 
-    await interaction.deferReply({ ephemeral: true });
+    await interaction.deferReply();
 
     const army = interaction.options.getInteger('army');
     const industry = interaction.options.getInteger('industry');
