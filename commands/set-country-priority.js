@@ -6,7 +6,7 @@ module.exports.interaction = async (interaction, game) => {
         return interaction.reply({ content: 'Only admins can use this command.', ephemeral: true });
     }
 
-    await interaction.deferReply({ ephemeral: true });
+    await interaction.deferReply();
 
     const countryName = interaction.options.getString('country');
     const army = interaction.options.getInteger('army');
