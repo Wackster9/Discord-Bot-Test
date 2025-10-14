@@ -3,11 +3,11 @@ const djs = require('discord.js');
 module.exports.interaction = async (interaction, game, Country, client) => {
     // The private "no peasants allowed" message.
     if (!interaction.member.permissions.has(djs.PermissionFlagsBits.ManageGuild)) {
-        return interaction.reply({ content: 'Only admins can cause global economic shifts.', ephemeral: true });
+        return interaction.reply({ content: 'Only admins can cause global economic shifts. mrrow...', ephemeral: true });
     }
 
     // The public declaration of economic policy.
-    await interaction.deferReply(); // No longer ephemeral.
+    await interaction.deferReply();
 
     const modifier = interaction.options.getNumber('modifier');
     const countriesStr = interaction.options.getString('countries');
@@ -26,7 +26,7 @@ module.exports.interaction = async (interaction, game, Country, client) => {
     }
 
     const newEvent = {
-        id: Date.now(), // <-- THE COMMA. BEHOLD ITS MAJESTY.
+        id: Date.now(),
         modifier,
         countries,
         isExclusionList,
@@ -35,14 +35,27 @@ module.exports.interaction = async (interaction, game, Country, client) => {
 
     client.economicEvents[interaction.guild.id].push(newEvent);
 
-    // Announce it to the masses.
     await interaction.editReply(`**A new economic event has begun!**
 - **Modifier:** ${modifier}x
 - **Affects:** ${affectType === 'all_except' ? 'All countries EXCEPT' : 'ONLY'} ${countries.join(', ')}
 - **Duration:** ${duration} paycheck cycles.
-- **Event ID:** \`${newEvent.id}\``); // Also added the ID to the reply so admins can cancel it easily.
+- **Event ID:** \`${newEvent.id}\``);
 };
 
 module.exports.application_command = () => {
-    // ...
+    return new djs.SlashCommandBuilder()
+        .setName('economic-event')
+        .setDescription('Applies a global or targeted modifier to country income.')
+        .addNumberOption(option => option.setName('modifier').setDescription('The income multiplier (e.g., 1.5 for +50%).').setRequired(true))
+        .addStringOption(option => option.setName('countries').setDescription('A comma-separated list of country names.').setRequired(true))
+        .addStringOption(option =>
+            option.setName('affect')
+                .setDescription('Whether to include or exclude the listed countries.')
+                .setRequired(true)
+                .addChoices(
+                    { name: 'All Countries EXCEPT Listed', value: 'all_except' },
+                    { name: 'ONLY Listed Countries', value: 'only_listed' } // <-- FIXED
+                )
+        )
+        .addIntegerOption(option => option.setName('duration').setDescription('How many paycheck cycles this event lasts.').setRequired(true));
 };
