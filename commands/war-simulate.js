@@ -1,7 +1,8 @@
 const djs = require('discord.js');
 const settings = require('../settings.json');
 
-module.exports.interaction = async (interaction, game) => {
+// NOTE: I added 'Country' to the arguments here. DO NOT REMOVE IT.
+module.exports.interaction = async (interaction, game, Country) => {
     await interaction.deferReply();
 
     const attackerCountry = interaction.options.getString('attacker');
@@ -15,30 +16,18 @@ module.exports.interaction = async (interaction, game) => {
     if (!defender) return interaction.editReply('Invalid defending country specified.');
     if (attacker.country === defender.country) return interaction.editReply('That’s the same country.');
 
-    // Compute scores
-    const attackerScore = attacker.getWarScore();
-    const defenderScore = Math.round(defender.getWarScore() * 1.1); // nerfed from 20% to 10%
-    const totalScore = attackerScore + defenderScore;
+    // --- THE NEW LOGIC ---
+    // We don't do math here anymore. We ask the expert.
+    const attackerWinChance = Country.calculateWinChance(attacker, defender);
 
-    // Base chance is proportional to scores
-    let attackerWinChance = attackerScore / totalScore;
-
-    // Apply flat odds buffs/nerfs (same logic as getWarResult)
-    if (attackerScore / defenderScore > 1.1) {
-        attackerWinChance += 0.10;
-    } else if (attackerScore / defenderScore > 1.0) {
-        attackerWinChance += 0.05;
-    } else if (defenderScore / attackerScore > 1.1) {
-        attackerWinChance -= 0.10;
-    } else if (defenderScore / attackerScore > 1.0) {
-        attackerWinChance -= 0.05;
-    }
-
-    // Clamp between 0 and 1
-    attackerWinChance = Math.max(0, Math.min(1, attackerWinChance));
-
+    // Convert decimal (0.75) to percentage (75.0)
     const attackerWinPercent = (attackerWinChance * 100).toFixed(1);
-    const defenderWinPercent = (100 - attackerWinPercent).toFixed(1);
+    const defenderWinPercent = ((1 - attackerWinChance) * 100).toFixed(1);
+
+    // We get the raw scores just for the display, but they don't affect the math anymore
+    // (The math inside calculateWinChance handles buffs/debuffs internally)
+    const attackerScore = attacker.getWarScore(); 
+    const defenderScore = defender.getWarScore();
 
     // Build embed
     const embed = new djs.EmbedBuilder()
@@ -51,11 +40,12 @@ module.exports.interaction = async (interaction, game) => {
         .setTitle(`War Simulation`)
         .setDescription(
             `**${attacker.country} ${attacker.flag}** vs **${defender.country} ${defender.flag}**\n\n` +
-            `📊 **Attacker Score:** ${attackerScore}\n` +
-            `🛡️ **Defender Score:** ${defenderScore}\n` +
-            `\n🎲 **Win Odds:**\n` +
+            `📊 **Base Attacker Score:** ${attackerScore}\n` +
+            `🛡️ **Base Defender Score:** ${defenderScore}\n` +
+            `\n🎲 **Official Win Odds:**\n` +
             `- ${attacker.country}: **${attackerWinPercent}%**\n` +
-            `- ${defender.country}: **${defenderWinPercent}%**\n`
+            `- ${defender.country}: **${defenderWinPercent}%**\n` +
+            `\n*(Odds calculated using the new exponential system + active buffs)*`
         );
 
     await interaction.editReply({ embeds: [embed] });
