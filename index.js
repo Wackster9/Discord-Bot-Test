@@ -186,6 +186,13 @@ setInterval(async () => {
                         const shouldBeAffected = event.isExclusionList ? !isCountryInList : isCountryInList;
                         if (shouldBeAffected) { finalModifier *= event.modifier; }
                     });
+					if (c.country === 'Test') { 
+    console.log(`[DEBUG] Country: ${c.country}`);
+    console.log(`[DEBUG] Base Paycheck: ${basePaycheck}`);
+    console.log(`[DEBUG] Active Events: ${events.length}`);
+    console.log(`[DEBUG] Final Modifier: ${finalModifier}`);
+    console.log(`[DEBUG] Money Change: ${basePaycheck * finalModifier}`);
+}
                     c.money += basePaycheck * finalModifier;
                     if (!c.pid) { aiSpend(c, guildId, client); }
                 });
