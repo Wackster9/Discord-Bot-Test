@@ -16,8 +16,6 @@ module.exports.interaction = async (interaction, game, Country) => {
     if (!defender) return interaction.editReply('Invalid defending country specified.');
     if (attacker.country === defender.country) return interaction.editReply('That’s the same country.');
 
-    // --- THE NEW LOGIC ---
-    // We don't do math here anymore. We ask the expert.
     const attackerWinChance = Country.calculateWinChance(attacker, defender);
 
     // Convert decimal (0.75) to percentage (75.0)
