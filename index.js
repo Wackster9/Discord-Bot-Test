@@ -141,6 +141,7 @@ function aiSpend(country, guild, client) {
         country.money -= numToBuyTanks * tankCost;
     }
 }
+module.exports.aiSpend = aiSpend;
 
 //SaveGame Manager
 setInterval(async () => {
