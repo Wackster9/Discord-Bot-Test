@@ -23,7 +23,7 @@ module.exports.interaction = async (interaction, game, Country, client) => {
         });
     });
 
-    await interaction.reply({ embeds: [embed });
+    await interaction.reply({ embeds: [embed] });
 };
 
 module.exports.application_command = () => {
