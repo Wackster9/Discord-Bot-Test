@@ -33,9 +33,9 @@ class Country {
         const totalDefenseBuff = defender.tempDefenseBuffs.reduce((total, buff) => total * buff.value, defender.defenseBuff);
         const defenderScore = defender.getWarScore() * 1.2 * totalDefenseBuff;
 
-        if (defenderScore <= 0) return 0.93;
+        if (defenderScore <= 0) return 0.99;
         const ratio = attackerScore / defenderScore;
-        const MAX_WIN_CHANCE = 0.93;
+        const MAX_WIN_CHANCE = 0.96;
         const MIDPOINT = 0.50;
         const STEEPNESS = 0.8;
         const spread = MAX_WIN_CHANCE - MIDPOINT;
