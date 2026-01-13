@@ -1,7 +1,7 @@
 const djs = require('discord.js');
 
 module.exports.interaction = async (interaction, game) => {
-    // This part is for the peasants. It's a private "get lost" message.
+    // go awway loser (if not admin)
     if (!interaction.member.permissions.has(djs.PermissionFlagsBits.ManageGuild)) {
         return interaction.reply({ content: 'Only admins can apply buffs.', ephemeral: true });
     }
@@ -34,7 +34,7 @@ module.exports.interaction = async (interaction, game) => {
         }
         replyMessage = `Applied a temporary ${type} buff of ${value}x to ${country.country} for ${uses} uses.`;
     } else {
-        if (value === 1) { // We're keeping the reset logic because it's smart.
+        if (value === 1) { // if u put 1 it should reset back to normal
              if (type === 'attack') {
                 country.attackBuff = 1.0;
             } else {
@@ -52,4 +52,19 @@ module.exports.interaction = async (interaction, game) => {
     }
 
     await interaction.editReply(replyMessage); // Now public
+};
+
+module.exports.application_command = () => {
+    return new djs.SlashCommandBuilder()
+        .setName('apply-buff')
+        .setDescription('Applies a permanent or temporary buff to a country.')
+        .addStringOption(option => option.setName('country').setDescription('The country to buff.').setRequired(true))
+        .addStringOption(option =>
+            option.setName('type')
+                .setDescription('The type of buff.')
+                .setRequired(true)
+                .addChoices({ name: 'Attack', value: 'attack' }, { name: 'Defense', value: 'defense' })
+        )
+        .addNumberOption(option => option.setName('value').setDescription('The buff multiplier (e.g., 1.25 for +25%). Use 1 to reset.').setRequired(true))
+        .addIntegerOption(option => option.setName('uses').setDescription('Number of uses (wars). Leave blank for a permanent buff.').setRequired(false));
 };
