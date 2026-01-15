@@ -7,7 +7,7 @@ module.exports.interaction = async (interaction, game) => {
     }
 
     // This part is for the admins. It's a public announcement.
-    await interaction.deferReply(); // No longer ephemeral
+    await interaction.deferReply(); 
 
     const countryName = interaction.options.getString('country');
     const type = interaction.options.getString('type');
@@ -17,15 +17,20 @@ module.exports.interaction = async (interaction, game) => {
     const country = game.getCountry(countryName);
 
     if (!country) {
-        return interaction.editReply('Invalid country specified.'); // Now public
+        return interaction.editReply('Invalid country specified.'); 
     }
     if (value <= 0) {
-        return interaction.editReply('Buff value must be a positive number (e.g., 1.2 for a 20% buff).'); // Now public
+        return interaction.editReply('Buff value must be a positive number (e.g., 1.2 for a 20% buff).'); 
     }
+
+    // SAFETY PATCH: Initialize arrays if they are missing (e.g. old save files)
+    if (!country.tempAttackBuffs) country.tempAttackBuffs = [];
+    if (!country.tempDefenseBuffs) country.tempDefenseBuffs = [];
 
     let replyMessage = '';
 
     if (uses) {
+        // This matches perfectly with the Country.js .reduce() logic
         const buffObject = { value, uses };
         if (type === 'attack') {
             country.tempAttackBuffs.push(buffObject);
@@ -34,7 +39,7 @@ module.exports.interaction = async (interaction, game) => {
         }
         replyMessage = `Applied a temporary ${type} buff of ${value}x to ${country.country} for ${uses} uses.`;
     } else {
-        if (value === 1) { // if u put 1 it should reset back to normal
+        if (value === 1) { // Reset logic
              if (type === 'attack') {
                 country.attackBuff = 1.0;
             } else {
@@ -51,7 +56,7 @@ module.exports.interaction = async (interaction, game) => {
         }
     }
 
-    await interaction.editReply(replyMessage); // Now public
+    await interaction.editReply(replyMessage); 
 };
 
 module.exports.application_command = () => {
