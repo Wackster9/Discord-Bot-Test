@@ -18,6 +18,8 @@ module.exports.interaction = async (interaction, game) => {
     if (armyAmount <= 0) return interaction.editReply('You cannot send 0 or negative soldiers.');
     if (armyAmount > p.army) return interaction.editReply(`You only have ${p.army} army! You cannot send ${armyAmount}.`);
 }
+	if (p.army <= 0) return interaction.editReply('You have no army to fight with, genius.');
+	
 	const result = p.constructor.getWarResult(p, c, armyAmount);
 // ... right after 'const result = p.constructor.getWarResult(p, c);'
 
