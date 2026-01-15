@@ -183,6 +183,7 @@ setInterval(async () => {
 client.lastPaycheckMonth = {};
 
 // Monthly paycheck trigger
+// Monthly paycheck trigger
 setInterval(async () => {
 	for (const guildId of Object.keys(games)) {
 		const game = games[guildId];
@@ -203,19 +204,32 @@ setInterval(async () => {
 
                 game.countries.forEach(c => {
                     const basePaycheck = (c.industry / 20) - (c.tank * (client.tankUpkeep[guildId] || 0) + c.army * (client.armyUpkeep[guildId] || 0));
-                    let finalModifier = 1.0;
+                    
+                    // --- CHANGED TO ADDITIVE LOGIC ---
+                    let totalPercentChange = 0; // Start at 0 change
+                    
                     events.forEach(event => {
                         const isCountryInList = event.countries.includes(c.country);
                         const shouldBeAffected = event.isExclusionList ? !isCountryInList : isCountryInList;
-                        if (shouldBeAffected) { finalModifier *= event.modifier; }
+                        
+                        if (shouldBeAffected) { 
+                            // Add the modifiers together. 
+                            // e.g. -0.5 (Tax) + -0.5 (Sanctions) = -1.0
+                            totalPercentChange += event.modifier; 
+                        }
                     });
+
+                    // Base is 1.0 (100%). Add the total change.
+                    const finalModifier = 1.0 + totalPercentChange;
+                    // ---------------------------------
+
 					if (c.country === 'Test') { 
-    console.log(`[DEBUG] Country: ${c.country}`);
-    console.log(`[DEBUG] Base Paycheck: ${basePaycheck}`);
-    console.log(`[DEBUG] Active Events: ${events.length}`);
-    console.log(`[DEBUG] Final Modifier: ${finalModifier}`);
-    console.log(`[DEBUG] Money Change: ${basePaycheck * finalModifier}`);
-}
+                        console.log(`[DEBUG] Country: ${c.country}`);
+                        console.log(`[DEBUG] Base Paycheck: ${basePaycheck}`);
+                        console.log(`[DEBUG] Total Change: ${totalPercentChange}`);
+                        console.log(`[DEBUG] Final Modifier: ${finalModifier}`);
+                    }
+                    
                     c.money += basePaycheck * finalModifier;
                     if (!c.pid) { aiSpend(c, guildId, client); }
                 });
@@ -231,7 +245,6 @@ setInterval(async () => {
 		}
 	}
 }, 1000 * 60);
-
 //Commands handler
 const files = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
 const commands = {};
