@@ -7,6 +7,7 @@ module.exports.interaction = async (interaction, game, Country) => {
 
     const attackerCountry = interaction.options.getString('attacker');
     const defenderCountry = interaction.options.getString('defender');
+    const armyAmount = interaction.options.getInteger('army'); // NEW: Get the army amount
 
     const attacker = game.getCountry(attackerCountry);
     const defender = game.getCountry(defenderCountry);
@@ -16,16 +17,23 @@ module.exports.interaction = async (interaction, game, Country) => {
     if (!defender) return interaction.editReply('Invalid defending country specified.');
     if (attacker.country === defender.country) return interaction.editReply('That’s the same country.');
 
-    const attackerWinChance = Country.calculateWinChance(attacker, defender);
+    // NEW: Validation for simulation
+    if (armyAmount) {
+        if (armyAmount <= 0) return interaction.editReply('You cannot simulate sending 0 or negative soldiers.');
+        if (armyAmount > attacker.army) return interaction.editReply(`Attacker only has ${attacker.army} army! You cannot simulate sending ${armyAmount}.`);
+    }
+
+    // UPDATED: Pass armyAmount to the calculation
+    const attackerWinChance = Country.calculateWinChance(attacker, defender, armyAmount);
 
     // Convert decimal (0.75) to percentage (75.0)
     const attackerWinPercent = (attackerWinChance * 100).toFixed(1);
     const defenderWinPercent = ((1 - attackerWinChance) * 100).toFixed(1);
 
-    // We get the raw scores just for the display, but they don't affect the math anymore
-    // (The math inside calculateWinChance handles buffs/debuffs internally)
-    const attackerScore = attacker.getWarScore(); 
-    const defenderScore = defender.getWarScore();
+    // UPDATED: Get the score based on the simulated army size
+    // If armyAmount is null, it defaults to full army.
+    const attackerScore = attacker.getWarScore(armyAmount); 
+    const defenderScore = defender.getWarScore(); // Defender always defends with everything
 
     // Build embed
     const embed = new djs.EmbedBuilder()
@@ -37,9 +45,10 @@ module.exports.interaction = async (interaction, game, Country) => {
         })
         .setTitle(`War Simulation`)
         .setDescription(
-            `**${attacker.country} ${attacker.flag}** vs **${defender.country} ${defender.flag}**\n\n` +
-            `📊 **Base Attacker Score:** ${attackerScore}\n` +
-            `🛡️ **Base Defender Score:** ${defenderScore}\n` +
+            `**${attacker.country} ${attacker.flag}** vs **${defender.country} ${defender.flag}**\n` +
+            `*(Simulating with: ${armyAmount ? armyAmount : 'Full Army'})*\n\n` +
+            `📊 **Attacker Score:** ${attackerScore}\n` +
+            `🛡️ **Defender Score:** ${defenderScore}\n` +
             `\n🎲 **Official Win Odds:**\n` +
             `- ${attacker.country}: **${attackerWinPercent}%**\n` +
             `- ${defender.country}: **${defenderWinPercent}%**\n` +
@@ -64,5 +73,9 @@ module.exports.application_command = () => {
             option.setName('defender')
                 .setDescription('The country that would defend.')
                 .setRequired(true)
+        )
+        // army amnt
+        .addIntegerOption(option => 
+            option.setName('army').setDescription('How much army to simulate sending (Default: All).').setRequired(false)
         );
 };
