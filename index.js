@@ -23,14 +23,21 @@ class Country {
         this.tempDefenseBuffs = []; 
     }
 
-	getWarScore() {
-		return this.army + Math.floor(this.army * (this.tank / 50));
+	getWarScore(armyOverride = null) {
+        // If an override is provided, use it. Otherwise, default to full army.
+        const armyVal = (armyOverride !== null && armyOverride !== undefined) ? armyOverride : this.army;
+		return armyVal + Math.floor(armyVal * (this.tank / 50));
 	}
 
-    static calculateWinChance(attacker, defender) {
+    static calculateWinChance(attacker, defender, attackingArmySize = null) {
         const totalAttackBuff = attacker.tempAttackBuffs.reduce((total, buff) => total * buff.value, attacker.attackBuff);
-        const attackerScore = attacker.getWarScore() * totalAttackBuff;
+        
+        // Pass the attackingArmySize to getWarScore
+        const attackerScore = attacker.getWarScore(attackingArmySize) * totalAttackBuff;
+        
         const totalDefenseBuff = defender.tempDefenseBuffs.reduce((total, buff) => total * buff.value, defender.defenseBuff);
+        
+        // Defender always uses full army (pass null)
         const defenderScore = defender.getWarScore() * 1.2 * totalDefenseBuff;
 
         if (defenderScore <= 0) return 0.99;
@@ -43,11 +50,14 @@ class Country {
         return Math.max(1 - MAX_WIN_CHANCE, Math.min(MAX_WIN_CHANCE, winChance));
     }
 
-	static getWarResult(attacker, defender) {
-        const attackerWinChance = Country.calculateWinChance(attacker, defender);
+	static getWarResult(attacker, defender, attackingArmySize) {
+        // Pass the army size down the chain
+        const attackerWinChance = Country.calculateWinChance(attacker, defender, attackingArmySize);
         const rng = Math.random();
-        const atkLoses = attacker.applyattackerWarCasualties(attacker, defender);
-        const defLoses = defender.applydefenderWarCasualties(defender, attacker);
+        
+        const atkLoses = attacker.applyattackerWarCasualties(attacker, defender, attackingArmySize);
+        const defLoses = defender.applydefenderWarCasualties(defender, attacker, attackingArmySize);
+        
         return {
             winner: rng < attackerWinChance ? attacker : defender,
             loser: rng < attackerWinChance ? defender : attacker,
@@ -57,22 +67,35 @@ class Country {
         };
     }
 
-	applyattackerWarCasualties(attacker, defender, casualties) {
-		const attackerScore = attacker.getWarScore();
+	applyattackerWarCasualties(attacker, defender, armyInBattle) {
+        // Use the specific army size if provided, otherwise full army
+        const currentArmy = armyInBattle || this.army;
+
+		const attackerScore = attacker.getWarScore(currentArmy);
 		const defenderScore = defender.getWarScore() * 1.2;
+		
+        let casualties;
 		if (attackerScore / defenderScore < 1) {
-			casualties = Math.floor(Math.random() * 0.07 * this.army + 0.1 * this.army);
+			casualties = Math.floor(Math.random() * 0.07 * currentArmy + 0.1 * currentArmy);
 		} else {
-			casualties = Math.floor(Math.random() * 0.07 * this.army + 0.1 * this.army * ((0.8) / (attackerScore / defenderScore)));
+			casualties = Math.floor(Math.random() * 0.07 * currentArmy + 0.1 * currentArmy * ((0.8) / (attackerScore / defenderScore)));
 		}
+        
 		if (casualties < 1) casualties = 1;
+        // Cap casualties at the amount sent to battle
+        if (casualties > currentArmy) casualties = currentArmy;
+
 		this.army -= casualties;
 		return casualties;
 	}
 
-	applydefenderWarCasualties(defender, attacker, casualties) {
-		const attackerScore = attacker.getWarScore();
+	applydefenderWarCasualties(defender, attacker, attackingArmySize) {
+        // Defender calculation relies on Attacker's score using the SENT army
+		const attackerScore = attacker.getWarScore(attackingArmySize);
 		const defenderScore = defender.getWarScore() * 1.2;
+		
+        let casualties;
+        // Defender uses full army (this.army)
 		if (defenderScore / attackerScore < 1) {
 			casualties = Math.floor(Math.random() * 0.04 * this.army + 0.1 * this.army);
 		} else {
@@ -83,7 +106,6 @@ class Country {
 		return casualties;
 	}
 }
-
 class Game {
 	constructor() {
 		this.countries = require('./countries/countries-1933.js').countries.map(c => new Country(...c));
