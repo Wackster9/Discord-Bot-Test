@@ -1,7 +1,7 @@
 const djs = require('discord.js');
 
 module.exports.interaction = async (interaction, game, Country, client) => {
-    // 1. Admin Check
+    // 1. Admin Check: No peasants allowed.
     if (!interaction.member.permissions.has(djs.PermissionFlagsBits.ManageGuild)) {
         return interaction.reply({ content: 'Only admins can cause global economic shifts.', ephemeral: true });
     }
@@ -13,10 +13,8 @@ module.exports.interaction = async (interaction, game, Country, client) => {
     const affectType = interaction.options.getString('affect');
     const duration = interaction.options.getInteger('duration');
 
-    // I REMOVED THE CHECK HERE. 
-    // You can now enter negative numbers (e.g., -1.5) or 0.
-    
-    // 2. Split and Validate Country Names
+    // 2. Country Validation Logic
+    // We split the list and make sure these countries actually exist.
     const rawNames = countriesStr.split(',').map(name => name.trim());
     const validCountries = [];
     const invalidNames = [];
@@ -24,25 +22,27 @@ module.exports.interaction = async (interaction, game, Country, client) => {
     for (const name of rawNames) {
         const c = game.getCountry(name); 
         if (c) {
-            validCountries.push(c.country); 
+            validCountries.push(c.country); // Store the official name
         } else {
             invalidNames.push(name);
         }
     }
 
+    // 3. Error Handling
     if (invalidNames.length > 0) {
         return interaction.editReply(`❌ **Error:** I could not find the following countries:\n${invalidNames.join(', ')}\n\nPlease check your spelling.`);
     }
 
-    const isExclusionList = affectType === 'all_except';
-
+    // 4. Initialize the Event Array if it doesn't exist
     if (!client.economicEvents[interaction.guild.id]) {
         client.economicEvents[interaction.guild.id] = [];
     }
 
+    const isExclusionList = affectType === 'all_except';
+
     const newEvent = {
         id: Date.now(),
-        modifier,
+        modifier, // This is now an ADDITIVE number (e.g., -0.2)
         countries: validCountries,
         isExclusionList,
         paychecksRemaining: duration
@@ -50,16 +50,20 @@ module.exports.interaction = async (interaction, game, Country, client) => {
 
     client.economicEvents[interaction.guild.id].push(newEvent);
 
-    // Dynamic description based on whether modifier is positive or negative
-    let effectDescription = '';
-    if (modifier > 1) effectDescription = '📈 **BOOM:** Incomes increased.';
-    else if (modifier > 0) effectDescription = '📉 **RECESSION:** Incomes reduced.';
-    else if (modifier === 0) effectDescription = '❄️ **FREEZE:** Incomes stopped.';
-    else effectDescription = '💸 **TAX/DEBT:** Countries are LOSING money.';
+    // 5. User Feedback
+    // We try to explain what the math will do so you don't panic.
+    let mathExplanation = '';
+    if (modifier > 0) {
+        mathExplanation = `Income will INCREASE by +${(modifier * 100).toFixed(0)}% (Additive).`;
+    } else if (modifier < 0) {
+        mathExplanation = `Income will DECREASE by ${Math.abs(modifier * 100).toFixed(0)}% (Additive).`;
+    } else {
+        mathExplanation = `Income will not change (+0%). Why did you do this?`;
+    }
 
     await interaction.editReply(`**A new economic event has begun!**
-${effectDescription}
-- **Modifier:** ${modifier}x
+${mathExplanation}
+- **Value:** ${modifier}
 - **Affects:** ${affectType === 'all_except' ? 'All countries EXCEPT' : 'ONLY'} ${validCountries.join(', ')}
 - **Duration:** ${duration} paycheck cycles.
 - **Event ID:** \`${newEvent.id}\``);
@@ -68,9 +72,17 @@ ${effectDescription}
 module.exports.application_command = () => {
     return new djs.SlashCommandBuilder()
         .setName('economic-event')
-        .setDescription('Applies a global or targeted modifier to country income.')
-        .addNumberOption(option => option.setName('modifier').setDescription('Multiplier. Use negatives (e.g. -1.0) to drain money.').setRequired(true))
-        .addStringOption(option => option.setName('countries').setDescription('Comma-separated list of country names.').setRequired(true))
+        .setDescription('Applies a global or targeted ADDITIVE modifier to income.')
+        .addNumberOption(option => 
+            option.setName('modifier')
+                .setDescription('Change in %. Use 0.5 for +50%, -0.2 for -20%, -1.0 for -100%.')
+                .setRequired(true)
+        )
+        .addStringOption(option => 
+            option.setName('countries')
+                .setDescription('Comma-separated list of country names.')
+                .setRequired(true)
+        )
         .addStringOption(option =>
             option.setName('affect')
                 .setDescription('Whether to include or exclude the listed countries.')
@@ -80,5 +92,9 @@ module.exports.application_command = () => {
                     { name: 'ONLY Listed Countries', value: 'only_listed' }
                 )
         )
-        .addIntegerOption(option => option.setName('duration').setDescription('How many paycheck cycles this event lasts.').setRequired(true));
+        .addIntegerOption(option => 
+            option.setName('duration')
+                .setDescription('How many paycheck cycles this event lasts.')
+                .setRequired(true)
+        );
 };
