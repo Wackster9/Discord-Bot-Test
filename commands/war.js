@@ -3,6 +3,7 @@ const settings = require('../settings.json');
 module.exports.interaction = async (interaction, game) => {
 	await interaction.deferReply();
 	const country = interaction.options.getString('country');
+	const armyAmount = interaction.options.getInteger('army');
 	const p = game.getPlayer(interaction.user.id);
 	const c = game.getCountry(country);
 	if (!game.started) return interaction.editReply('Quit being a quickshot there aint no game yet.');
@@ -13,8 +14,11 @@ module.exports.interaction = async (interaction, game) => {
 	//if (!c.pid) return interaction.editReply('This country is unclaimed.');
 	if (c.pid === interaction.user.id) return interaction.editReply('You cannot declare war on yourself.');
 	//Keep the comments if you want to allow players to fight unclaimed countries
-
-	const result = p.constructor.getWarResult(p, c);
+	if (armyAmount) {
+    if (armyAmount <= 0) return interaction.editReply('You cannot send 0 or negative soldiers.');
+    if (armyAmount > p.army) return interaction.editReply(`You only have ${p.army} army! You cannot send ${armyAmount}.`);
+}
+	const result = p.constructor.getWarResult(p, c, armyAmount);
 // ... right after 'const result = p.constructor.getWarResult(p, c);'
 
 // DECREMENT AND CLEAN UP BUFFS
@@ -44,10 +48,13 @@ c.tempDefenseBuffs = c.tempDefenseBuffs.filter(buff => buff.uses > 0);
 };
 module.exports.button = async interaction => { };
 module.exports.application_command = () => {
-	return new djs.SlashCommandBuilder()
-		.setName('war')
-		.setDescription('Use this to start a battle against another country. Quite simple.')
-		.addStringOption(option =>
-			option.setName('country').setDescription('The name or number of said country.').setRequired(true),
-		);
+    return new djs.SlashCommandBuilder()
+        .setName('war')
+        .setDescription('Start a battle against another country.')
+        .addStringOption(option =>
+            option.setName('country').setDescription('The target country.').setRequired(true)
+        )
+        .addIntegerOption(option => 
+            option.setName('army').setDescription('How much army to send (Default: All).').setRequired(false)
+        );
 };
