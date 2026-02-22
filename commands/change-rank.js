@@ -4,11 +4,6 @@ const settings = require('../settings.json');
 module.exports.interaction = async (interaction, game) => {
     await interaction.deferReply({ ephemeral: true });
 
-    // Check for admin permissions
-    if (!interaction.member.permissions.has(djs.PermissionsBitField.Flags.Administrator)) {
-        return interaction.editReply('You need administrator permissions to change country types.');
-    }
-
     const countryName = interaction.options.getString('country');
     const newType = interaction.options.getString('type');
 
@@ -40,6 +35,7 @@ module.exports.application_command = () => {
     return new djs.SlashCommandBuilder()
         .setName('change-rank')
         .setDescription('ADMIN: Change a country\'s type (e.g., Major Powers -> Regional Powers)')
+        .setDefaultMemberPermissions(djs.PermissionsBitField.Flags.Administrator)
         .addStringOption(option =>
             option.setName('country')
                 .setDescription('The country to modify')
