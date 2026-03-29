@@ -16,91 +16,106 @@ class Country {
 		this.type = type;
 		this.flag = flag || '🏳️';
 		this.active = true;
-        this.attackBuff = 1.0;
-        this.defenseBuff = 1.0;
-        this.aiPriorities = null; 
-	    this.tempAttackBuffs = [];
-        this.tempDefenseBuffs = []; 
-    }
+		this.attackBuff = 1.0;
+		this.defenseBuff = 1.0;
+		this.aiPriorities = null;
+		this.tempAttackBuffs = [];
+		this.tempDefenseBuffs = [];
+	}
 
 	getWarScore(armyOverride = null) {
-        // If an override is provided, use it. Otherwise, default to full army.
-        const armyVal = (armyOverride !== null && armyOverride !== undefined) ? armyOverride : this.army;
+		// If an override is provided, use it. Otherwise, default to full army.
+		const armyVal = (armyOverride !== null && armyOverride !== undefined) ? armyOverride : this.army;
 		return armyVal + Math.floor(armyVal * (this.tank / 50));
 	}
 
-    static calculateWinChance(attacker, defender, attackingArmySize = null) {
-        const totalAttackBuff = attacker.tempAttackBuffs.reduce((total, buff) => total * buff.value, attacker.attackBuff);
-        
-        // Pass the attackingArmySize to getWarScore
-        const attackerScore = attacker.getWarScore(attackingArmySize) * totalAttackBuff;
-        
-        const totalDefenseBuff = defender.tempDefenseBuffs.reduce((total, buff) => total * buff.value, defender.defenseBuff);
-        
-        // Defender always uses full army (pass null)
-        const defenderScore = defender.getWarScore() * 1.2 * totalDefenseBuff;
+	static calculateWinChance(attacker, defender, attackingArmySize = null) {
+		const totalAttackBuff = attacker.tempAttackBuffs.reduce((total, buff) => total * buff.value, attacker.attackBuff);
 
-        if (defenderScore <= 0) return 0.99;
-        const ratio = attackerScore / defenderScore;
-        const MAX_WIN_CHANCE = 0.96;
-        const MIDPOINT = 0.50;
-        const STEEPNESS = 0.8;
-        const spread = MAX_WIN_CHANCE - MIDPOINT;
-        let winChance = MIDPOINT + spread * (2 / Math.PI) * Math.atan(STEEPNESS * (ratio - 1));
-        return Math.max(1 - MAX_WIN_CHANCE, Math.min(MAX_WIN_CHANCE, winChance));
-    }
+		// Pass the attackingArmySize to getWarScore
+		const attackerScore = attacker.getWarScore(attackingArmySize) * totalAttackBuff;
+
+		const totalDefenseBuff = defender.tempDefenseBuffs.reduce((total, buff) => total * buff.value, defender.defenseBuff);
+
+		// Defender always uses full army (pass null)
+		const defenderScore = defender.getWarScore() * 1.2 * totalDefenseBuff;
+
+		if (defenderScore <= 0) return 0.99;
+		const ratio = attackerScore / defenderScore;
+		const MAX_WIN_CHANCE = 0.96;
+		const MIDPOINT = 0.50;
+		const STEEPNESS = 0.8;
+		const spread = MAX_WIN_CHANCE - MIDPOINT;
+		let winChance = MIDPOINT + spread * (2 / Math.PI) * Math.atan(STEEPNESS * (ratio - 1));
+		return Math.max(1 - MAX_WIN_CHANCE, Math.min(MAX_WIN_CHANCE, winChance));
+	}
 
 	static getWarResult(attacker, defender, attackingArmySize) {
-        // Pass the army size down the chain
-        const attackerWinChance = Country.calculateWinChance(attacker, defender, attackingArmySize);
-        const rng = Math.random();
-        
-        const atkLoses = attacker.applyattackerWarCasualties(attacker, defender, attackingArmySize);
-        const defLoses = defender.applydefenderWarCasualties(defender, attacker, attackingArmySize);
-        
-        return {
-            winner: rng < attackerWinChance ? attacker : defender,
-            loser: rng < attackerWinChance ? defender : attacker,
-            atkLoses,
-            defLoses,
-            winChance: (attackerWinChance * 100).toFixed(1)
-        };
-    }
+		// Pass the army size down the chain
+		const attackerWinChance = Country.calculateWinChance(attacker, defender, attackingArmySize);
+		const rng = Math.random();
+		const winner = rng < attackerWinChance ? attacker : defender;
+		const loser = rng < attackerWinChance ? defender : attacker;
 
-	applyattackerWarCasualties(attacker, defender, armyInBattle) {
-        // Use the specific army size if provided, otherwise full army
-        const currentArmy = armyInBattle || this.army;
+		const atkLoses = attacker.applyattackerWarCasualties(attacker, defender, attackingArmySize, winner);
+		const defLoses = defender.applydefenderWarCasualties(defender, attacker, attackingArmySize, winner);
+
+		return {
+			winner,
+			loser,
+			atkLoses,
+			defLoses,
+			winChance: (attackerWinChance * 100).toFixed(1)
+		};
+	}
+
+	applyattackerWarCasualties(attacker, defender, armyInBattle, winner) {
+		// Use the specific army size if provided, otherwise full army
+		const currentArmy = armyInBattle || this.army;
 
 		const attackerScore = attacker.getWarScore(currentArmy);
 		const defenderScore = defender.getWarScore() * 1.2;
-		
-        let casualties;
-		if (attackerScore / defenderScore < 1) {
+
+		let attIsBigger = 1;
+		if (attackerScore > defenderScore)
+			attIsBigger = attacker.getWarScore() / defenderScore
+
+		let casualties;
+		if (winner === attacker)
+			casualties = Math.floor(Math.random() * 0.10 * currentArmy / attIsBigger + 0.05 * currentArmy);
+		else
+			casualties = Math.floor(Math.random() * 0.05 * currentArmy / attIsBigger + 0.05 * currentArmy);
+		/* if (attackerScore / defenderScore < 1) {
 			casualties = Math.floor(Math.random() * 0.07 * currentArmy + 0.1 * currentArmy);
 		} else {
 			casualties = Math.floor(Math.random() * 0.07 * currentArmy + 0.1 * currentArmy * ((0.8) / (attackerScore / defenderScore)));
-		}
-        
+		} */
+
 		if (casualties < 1) casualties = 1;
-        // Cap casualties at the amount sent to battle
-        if (casualties > currentArmy) casualties = currentArmy;
+		// Cap casualties at the amount sent to battle
+		if (casualties > currentArmy) casualties = currentArmy;
 
 		this.army -= casualties;
 		return casualties;
 	}
 
-	applydefenderWarCasualties(defender, attacker, attackingArmySize) {
-        // Defender calculation relies on Attacker's score using the SENT army
+	applydefenderWarCasualties(defender, attacker, attackingArmySize, winner) {
+		// Defender calculation relies on Attacker's score using the SENT army
+		const currentArmy = attackingArmySize || this.army;
+
 		const attackerScore = attacker.getWarScore(attackingArmySize);
 		const defenderScore = defender.getWarScore() * 1.2;
-		
-        let casualties;
-        // Defender uses full army (this.army)
-		if (defenderScore / attackerScore < 1) {
-			casualties = Math.floor(Math.random() * 0.04 * this.army + 0.1 * this.army);
-		} else {
-			casualties = Math.floor(Math.random() * 0.04 * this.army + 0.1 * this.army * (1) / (defenderScore / attackerScore));
-		}
+
+		let defIsBigger = 1;
+		if (defenderScore > attackerScore)
+			defIsBigger = defenderScore / attackerScore
+
+		let casualties;
+		// Defender uses full army (this.army)
+		if (winner === defender)
+			casualties = Math.floor(Math.random() * 0.10 * currentArmy / defIsBigger + 0.05 * currentArmy);
+		else
+			casualties = Math.floor(Math.random() * 0.05 * currentArmy / defIsBigger + 0.05 * currentArmy);
 		if (casualties < 1) casualties = 1;
 		this.army -= casualties;
 		return casualties;
@@ -125,7 +140,7 @@ class Game {
 	}
 	getCountry(country) {
 		if (!isNaN(country)) return this.countries[country - 1];
-				return this.countries.find(c => c.country.toLowerCase() === country.toLowerCase());
+		return this.countries.find(c => c.country.toLowerCase() === country.toLowerCase());
 	}
 	abandonCountry(pid) {
 		const c = this.countries.find(c => c.pid === pid && c.active);
@@ -139,29 +154,29 @@ class Game {
 const games = {};
 
 function aiSpend(country, guild, client) {
-    const tankCost = client.tankCost[guild] || 20;
-    const armyCost = 5; 
-    const industryCost = 10;
-    const priorities = country.aiPriorities || client.aiPriorities[guild] || { army: 50, industry: 40, tank: 10 };
-    let moneyToSpend = country.money;
-    const armyBudget = moneyToSpend * (priorities.army / 100);
-    const numToBuyArmy = Math.floor(armyBudget / armyCost);
-    if (numToBuyArmy > 0) {
-        country.army += numToBuyArmy;
-        country.money -= numToBuyArmy * armyCost;
-    }
-    const industryBudget = country.money * (priorities.industry / 100);
-    const numToBuyIndustry = Math.floor(industryBudget / industryCost);
-    if (numToBuyIndustry > 0) {
-        country.industry += numToBuyIndustry * 20; 
-        country.money -= numToBuyIndustry * industryCost;
-    }
-    const tankBudget = country.money * (priorities.tank / 100);
-    const numToBuyTanks = Math.floor(tankBudget / tankCost);
-    if (numToBuyTanks > 0) {
-        country.tank += numToBuyTanks;
-        country.money -= numToBuyTanks * tankCost;
-    }
+	const tankCost = client.tankCost[guild] || 20;
+	const armyCost = 5;
+	const industryCost = 10;
+	const priorities = country.aiPriorities || client.aiPriorities[guild] || { army: 50, industry: 40, tank: 10 };
+	let moneyToSpend = country.money;
+	const armyBudget = moneyToSpend * (priorities.army / 100);
+	const industryBudget = moneyToSpend * (priorities.industry / 100);
+	const tankBudget = moneyToSpend * (priorities.tank / 100);
+	const numToBuyArmy = Math.floor(armyBudget / armyCost);
+	if (numToBuyArmy > 0) {
+		country.army += numToBuyArmy;
+		country.money -= numToBuyArmy * armyCost;
+	}
+	const numToBuyIndustry = Math.floor(industryBudget / industryCost);
+	if (numToBuyIndustry > 0) {
+		country.industry += numToBuyIndustry * 20;
+		country.money -= numToBuyIndustry * industryCost;
+	}
+	const numToBuyTanks = Math.floor(tankBudget / tankCost);
+	if (numToBuyTanks > 0) {
+		country.tank += numToBuyTanks;
+		country.money -= numToBuyTanks * tankCost;
+	}
 }
 module.exports.aiSpend = aiSpend;
 
@@ -194,50 +209,50 @@ setInterval(async () => {
 		const monthsPassed = Math.floor(msDiff / (1000 * 60 * Number(minutesPerMonth)));
 
 		const currentMonthIndex = monthsPassed % 12;
-		const quarterMonths = [0, 3, 6, 9]; 
+		const quarterMonths = [0, 3, 6, 9];
 
 		if (quarterMonths.includes(currentMonthIndex)) {
 			if (client.lastPaycheckMonth[guildId] !== currentMonthIndex) {
 				console.log(`Triggering paycheck for guild ${guildId} in month index ${currentMonthIndex}`);
-                
-                const events = client.economicEvents[guildId] || [];
 
-                game.countries.forEach(c => {
-                    const basePaycheck = (c.industry / 20) - (c.tank * (client.tankUpkeep[guildId] || 0) + c.army * (client.armyUpkeep[guildId] || 0));
-                    
-                    // --- CHANGED TO ADDITIVE LOGIC ---
-                    let totalPercentChange = 0; // Start at 0 change
-                    
-                    events.forEach(event => {
-                        const isCountryInList = event.countries.includes(c.country);
-                        const shouldBeAffected = event.isExclusionList ? !isCountryInList : isCountryInList;
-                        
-                        if (shouldBeAffected) { 
-                            // Add the modifiers together. 
-                            // e.g. -0.5 (Tax) + -0.5 (Sanctions) = -1.0
-                            totalPercentChange += event.modifier; 
-                        }
-                    });
+				const events = client.economicEvents[guildId] || [];
 
-                    // Base is 1.0 (100%). Add the total change.
-                    const finalModifier = 1.0 + totalPercentChange;
-                    // ---------------------------------
+				game.countries.forEach(c => {
+					const basePaycheck = (c.industry / 20) - (c.tank * (client.tankUpkeep[guildId] || 0) + c.army * (client.armyUpkeep[guildId] || 0));
 
-					if (c.country === 'Test') { 
-                        console.log(`[DEBUG] Country: ${c.country}`);
-                        console.log(`[DEBUG] Base Paycheck: ${basePaycheck}`);
-                        console.log(`[DEBUG] Total Change: ${totalPercentChange}`);
-                        console.log(`[DEBUG] Final Modifier: ${finalModifier}`);
-                    }
-                    
-                    c.money += basePaycheck * finalModifier;
-                    if (!c.pid) { aiSpend(c, guildId, client); }
-                });
+					// --- CHANGED TO ADDITIVE LOGIC ---
+					let totalPercentChange = 0; // Start at 0 change
 
-                if (events.length > 0) {
-                    events.forEach(event => event.paychecksRemaining--);
-                    client.economicEvents[guildId] = events.filter(event => event.paychecksRemaining > 0);
-                }  
+					events.forEach(event => {
+						const isCountryInList = event.countries.includes(c.country);
+						const shouldBeAffected = event.isExclusionList ? !isCountryInList : isCountryInList;
+
+						if (shouldBeAffected) {
+							// Add the modifiers together. 
+							// e.g. -0.5 (Tax) + -0.5 (Sanctions) = -1.0
+							totalPercentChange += event.modifier;
+						}
+					});
+
+					// Base is 1.0 (100%). Add the total change.
+					const finalModifier = 1.0 + totalPercentChange;
+					// ---------------------------------
+
+					if (c.country === 'Test') {
+						console.log(`[DEBUG] Country: ${c.country}`);
+						console.log(`[DEBUG] Base Paycheck: ${basePaycheck}`);
+						console.log(`[DEBUG] Total Change: ${totalPercentChange}`);
+						console.log(`[DEBUG] Final Modifier: ${finalModifier}`);
+					}
+
+					c.money += basePaycheck * finalModifier;
+					if (!c.pid) { aiSpend(c, guildId, client); }
+				});
+
+				if (events.length > 0) {
+					events.forEach(event => event.paychecksRemaining--);
+					client.economicEvents[guildId] = events.filter(event => event.paychecksRemaining > 0);
+				}
 				client.lastPaycheckMonth[guildId] = currentMonthIndex;
 			}
 		} else {
@@ -261,8 +276,8 @@ client.once('ready', async () => {
 	client.tankUpkeep = {};
 	client.armyUpkeep = {};
 	client.minutesPerMonth = {};
-    client.aiPriorities = {};
-    client.economicEvents = {}; 
+	client.aiPriorities = {};
+	client.economicEvents = {};
 });
 
 client.on('interactionCreate', async interaction => {
