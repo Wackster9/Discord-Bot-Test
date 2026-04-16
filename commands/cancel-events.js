@@ -1,13 +1,13 @@
 const djs = require('discord.js');
 
 module.exports.interaction = async (interaction, game, Country, client) => {
-    // Private shaming for non-admins. As decreed.
+
     if (!interaction.member.permissions.has(djs.PermissionFlagsBits.ManageGuild)) {
         return interaction.reply({ content: 'Only admins can cancel events.', ephemeral: true });
     }
 
-    // Public record-keeping for the glorious leaders.
-    await interaction.deferReply(); // No more secrets.
+    // Public record-keeping
+    await interaction.deferReply(); 
 
     const eventId = interaction.options.getString('id');
     const events = client.economicEvents[interaction.guild.id] || [];
@@ -21,11 +21,10 @@ module.exports.interaction = async (interaction, game, Country, client) => {
     // Filter the events array, keeping everything EXCEPT the event with the matching ID
     client.economicEvents[interaction.guild.id] = events.filter(event => event.id.toString() !== eventId);
 
-    // Announce the cancellation to the world.
+    // Announce the cancellation 
     await interaction.editReply({ content: `The economic event with ID **${eventId}** has been officially canceled.` });
 };
 
-// ... application_command remains the same, a silent monument to a simpler time ...
 module.exports.application_command = () => {
     return new djs.SlashCommandBuilder()
         .setName('cancel-event')
