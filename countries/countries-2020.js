@@ -65,8 +65,8 @@ module.exports.countries = [
     ['Kenya', 520, 12, 1, 0, 'Minor Powers', '🇰🇪'],
     ['Tanzania', 280, 6, 0, 0, 'Minor Powers', '🇹🇿'],
     ['Uzbekistan', 220, 4, 0, 0, 'Minor Powers', '🇺🇿'],
-    ['DR Congo', 260, 3, 0, 0, 'Minor Powers', '🇨🇩'],  
-    ['Ghana', 520, 7, 0, 0, 'Minor Powers', '🇬🇭'],
+    ['DR Congo', 260, 18, 3, 0, 'Minor Powers', '🇨🇩'],  
+    ['Ghana', 520, 9, 0, 0, 'Minor Powers', '🇬🇭'],
 
     ['Serbia', 320, 3, 0, 0, 'Small Powers', '🇷🇸'],
     ['Afghanistan', 220, 20, 0, -40, 'Small Powers', '🇦🇫'],
@@ -79,8 +79,8 @@ module.exports.countries = [
     ['Singapore', 460, 16, 4, 80, 'Small Powers', '🇸🇬'],
     ['Myanmar', 280, 20, 0, 0, 'Small Powers', '🇲🇲'],
     ['Azerbaijan', 360, 10, 0, 0, 'Small Powers', '🇦🇿'],
-    ['Syria', 380, 20, 0, 0, 'Small Powers', '🇸🇾'],
-    ['Somalia', 200, 10, 0, 0, 'Small Powers', '🇸🇴'],
+    ['Syria', 380, 20, 6, 0, 'Small Powers', '🇸🇾'],
+    ['Somalia', 200, 10, 4, 0, 'Small Powers', '🇸🇴'],
 
     ['Kuwait', 440, 5, 0, 40, 'Insignificant Powers', '🇰🇼'],
     ['Ecuador', 320, 3, 0, 0, 'Insignificant Powers', '🇪🇨'],
