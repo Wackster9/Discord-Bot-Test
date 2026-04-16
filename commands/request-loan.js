@@ -1,3 +1,4 @@
+// commands/request-loan.js
 const { SlashCommandBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
 const crypto = require('crypto');
 
@@ -26,24 +27,26 @@ module.exports.interaction = async (interaction, game) => {
         lender: target.country,
         borrower: player.country,
         principal: amount,
-        status: 'pending' // Just pending in general now
+        status: 'pending' // Note: interest/payment rates are NOT set here. The lender does that.
     };
+
+    if (!game.loanProposals) game.loanProposals = [];
     game.loanProposals.push(proposal);
 
-    // Note the new button IDs for the lender
     const row = new ActionRowBuilder()
         .addComponents(
-            new ButtonBuilder().setCustomId(`lender-approve-${proposalId}`).setLabel('Approve (Default Rate)').setStyle(ButtonStyle.Success),
-            new ButtonBuilder().setCustomId(`lender-modify-${proposalId}`).setLabel('Set Custom Rate').setStyle(ButtonStyle.Primary),
-            new ButtonBuilder().setCustomId(`lender-decline-${proposalId}`).setLabel('Decline').setStyle(ButtonStyle.Danger)
+            // The customId starts with 'loan-' so it's handled by your loan.js file
+            new ButtonBuilder().setCustomId(`loan-approve-standard-${proposalId}`).setLabel('Approve (Standard Terms)').setStyle(ButtonStyle.Success),
+            new ButtonBuilder().setCustomId(`loan-propose-custom-${proposalId}`).setLabel('Propose Custom Terms').setStyle(ButtonStyle.Primary),
+            new ButtonBuilder().setCustomId(`loan-decline-${proposalId}`).setLabel('Decline').setStyle(ButtonStyle.Danger)
         );
 
-    await interaction.reply({ content: `Your loan request has been sent to **${target.country}**.`, ephemeral: true });
-    
+    await interaction.reply({ content: `Your loan request for **$${amount.toLocaleString()}** has been sent to **${target.country}**.`, ephemeral: true });
+
     try {
         const targetUser = await interaction.client.users.fetch(target.pid);
         await targetUser.send({
-            content: `**Loan Request Received!**\n**${player.country}** is requesting a loan of **$${amount}** from you. Please respond below.`,
+            content: `**Loan Request Received!**\n**${player.country}** is requesting a loan of **$${amount.toLocaleString()}** from you.`,
             components: [row]
         });
     } catch {
