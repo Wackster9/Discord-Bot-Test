@@ -335,19 +335,22 @@ client.on('interactionCreate', async interaction => {
         if (interaction.isCommand()) {
             const command = commands[interaction.commandName];
             if (command?.interaction) {
-                await command.interaction(interaction, game);
+                // PASS 'client' AND 'Country'
+                await command.interaction(interaction, game, client, Country);
             }
         } else if (interaction.isButton()) {
-            const [commandName] = interaction.customId.split('-'); // e.g., "loan" from "loan-accept-123"
+            const [commandName] = interaction.customId.split('-');
             const command = commands[commandName];
             if (command?.button) {
-                await command.button(interaction, game); // This calls the button function in loan.js
+                // PASS 'client'
+                await command.button(interaction, game, client);
             }
         } else if (interaction.isModalSubmit()) {
-            const [commandName] = interaction.customId.split('-'); // e.g., "loan" from "loan-submitcustom-123"
+            const [commandName] = interaction.customId.split('-');
             const command = commands[commandName];
             if (command?.modal) {
-                await command.modal(interaction, game); // This calls the modal function in loan.js
+                // PASS 'client'
+                await command.modal(interaction, game, client);
             }
         }
     } catch (err) {
