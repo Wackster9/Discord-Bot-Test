@@ -26,15 +26,15 @@ module.exports.countries = [
     ['Argentina', 1600, 10, 3, 0, 'Regional Powers', '🇦🇷'],
     ['Pakistan', 1860, 30, 8, 20, 'Regional Powers', '🇵🇰'],
     ['Nigeria', 1560, 23, 2, 0, 'Regional Powers', '🇳🇬'],
-    ['Vietnam', 1060, 15, 2, 0, 'Regional Powers', '🇻🇳'],
+    ['Vietnam', 1060, 20, 2, 0, 'Regional Powers', '🇻🇳'],
     ['North Korea', 1460, 60, 15, -30, 'Regional Powers', '🇰🇵'],
-    ['Thailand', 1020, 15, 3, 0, 'Regional Powers', '🇹🇭'],
     ['South Africa', 1480, 13, 5, 0, 'Regional Powers', '🇿🇦'],
 
    ['Poland', 1400, 10, 3, 0, 'Medium Powers', '🇵🇱'],
     ['The Netherlands', 1300, 5, 1, 0, 'Medium Powers', '🇳🇱'],
     ['Algeria', 660, 22, 4, 0, 'Medium Powers', '🇩🇿'],
     ['Ukraine', 920, 25, 5, 0, 'Medium Powers', '🇺🇦'],
+    ['Thailand', 860, 15, 3, 0, 'Medium Powers', '🇹🇭'],
 
     ['Romania', 620, 10, 2, 0, 'Minor Powers', '🇷🇴'],
     ['Belgium', 700, 4, 1, 0, 'Minor Powers', '🇧🇪'],
