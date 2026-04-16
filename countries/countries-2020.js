@@ -115,7 +115,7 @@ module.exports.countries = [
     ['Papua New Guinea', 140, 4, 0, 0, 'Insignificant Powers', '🇵🇬'],
     ['Tobruk Libya', 120, 3, 0, 0, 'Insignificant Powers', '🇱🇾'],
     ['Tripoli Libya', 260, 3, 0, 0, 'Insignificant Powers', '🇱🇾'],
-    ['Houthis', 280, 18, 0, 0, 'Insignificant Powers', '🇾🇪'],
+    ['Houthis', 180, 18, 0, 0, 'Insignificant Powers', '🇾🇪'],
     ['Palestine', 120, 5, 0, 0,  'Insignificant Powers', '🇵🇸'],
     ['Bosnia and Herzegovina', 160, 2, 0, 0, 'Insignificant Powers', '🇧🇦']
 
