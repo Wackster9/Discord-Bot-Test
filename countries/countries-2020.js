@@ -10,7 +10,7 @@ module.exports.countries = [
     ['France', 4800, 30, 12, 90, 'Major Powers', '🇫🇷'],
 
     ['Brazil', 2800, 20, 5, 40, 'Regional Powers', '🇧🇷'],
-    ['Indonesia', 2400, 30, 5, 30, 'Regional Powers', '🇮🇩'],
+    ['Indonesia', 2900, 30, 5, 30, 'Regional Powers', '🇮🇩'],
     ['Italy', 3660, 20, 3, 20, 'Regional Powers', '🇮🇹'],
     ['South Korea', 3200, 40, 7, 60, 'Regional Powers', '🇰🇷'],
     ['Turkey', 2660, 24, 8, 30, 'Regional Powers', '🇹🇷'],
@@ -69,16 +69,16 @@ module.exports.countries = [
     ['Ghana', 520, 9, 0, 0, 'Minor Powers', '🇬🇭'],
     ['Serbia', 320, 13, 3, 0, 'Minor Powers', '🇷🇸'],
 
-    ['Afghanistan', 220, 20, 0, -40, 'Small Powers', '🇦🇫'],
-    ['Belarus', 420, 15, 0, 5, 'Small Powers', '🇧🇾'],
+    ['Afghanistan', 220, 20, 4, -40, 'Small Powers', '🇦🇫'],
+    ['Belarus', 420, 15, 5, 5, 'Small Powers', '🇧🇾'],
    ['Angola', 180, 3, 0, 0, 'Small Powers', '🇦🇴'],
     ['Ivory Coast', 420, 3, 0, 0, 'Small Powers', '🇨🇮'],
     ['Croatia', 260, 3, 0, 0, 'Small Powers', '🇭🇷'],
     ['United Arab Emirates', 720, 16, 5, 100, 'Small Powers', '🇦🇪'],
     ['Denmark', 380, 3, 0, 0, 'Small Powers', '🇩🇰'],
     ['Singapore', 460, 16, 4, 80, 'Small Powers', '🇸🇬'],
-    ['Myanmar', 280, 20, 0, 0, 'Small Powers', '🇲🇲'],
-    ['Azerbaijan', 360, 10, 0, 0, 'Small Powers', '🇦🇿'],
+    ['Myanmar', 280, 20, 4, 0, 'Small Powers', '🇲🇲'],
+    ['Azerbaijan', 360, 17, 4, 0, 'Small Powers', '🇦🇿'],
     ['Syria', 380, 20, 6, 0, 'Small Powers', '🇸🇾'],
     ['Somalia', 200, 10, 4, 0, 'Small Powers', '🇸🇴'],
 
@@ -88,7 +88,7 @@ module.exports.countries = [
     ['Oman', 420, 6, 0, 0, 'Insignificant Powers', '🇴🇲'],
     ['Guatemala', 280, 3, 0, 0, 'Insignificant Powers', '🇬🇹'],
     ['Sri Lanka', 380, 5, 0, -20, 'Insignificant Powers', '🇱🇰'],
-    ['Bulgaria', 360, 3, 0, 0, 'Insignificant Powers', '🇧🇬'],
+    ['Bulgaria', 360, 3, 2, 0, 'Insignificant Powers', '🇧🇬'],
     ['Lithuania', 220, 3, 0, 0, 'Insignificant Powers', '🇱🇹'],
     ['Latvia', 160, 3, 0, 0, 'Insignificant Powers', '🇱🇻'],
     ['Costa Rica', 240, 0, 0, 0, 'Insignificant Powers', '🇨🇷'],
@@ -115,7 +115,7 @@ module.exports.countries = [
     ['Papua New Guinea', 140, 4, 0, 0, 'Insignificant Powers', '🇵🇬'],
     ['Tobruk Libya', 120, 3, 0, 0, 'Insignificant Powers', '🇱🇾'],
     ['Tripoli Libya', 260, 3, 0, 0, 'Insignificant Powers', '🇱🇾'],
-    ['Houthis', 180, 18, 0, 0, 'Insignificant Powers', '🇾🇪'],
+    ['Houthis', 180, 18, 4, 0, 'Insignificant Powers', '🇾🇪'],
     ['Palestine', 120, 5, 0, 0,  'Insignificant Powers', '🇵🇸'],
     ['Bosnia and Herzegovina', 160, 2, 0, 0, 'Insignificant Powers', '🇧🇦']
 
