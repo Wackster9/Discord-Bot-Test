@@ -123,7 +123,7 @@ module.exports.countries = [
     ['Tripoli Libya', 260, 3, 0, 0, 'Insignificant Powers', '🇱🇾'],
     ['Houthis', 180, 18, 4, 0, 'Insignificant Powers', '🇾🇪'],
     ['Palestine', 120, 5, 0, 0,  'Insignificant Powers', '🇵🇸'],
-    ['Bosnia and Herzegovina', 160, 2, 0, 0, 'Insignificant Powers', '🇧🇦']
+    ['Bosnia and Herzegovina', 160, 2, 0, 0, 'Insignificant Powers', '🇧🇦'],
     ['Mongolia', 460, 2, 0, 0, 'Insignificant Powers', '🇲🇳'],
     ['Georgia', 220, 15, 0, 0, 'Insignificant Powers', '🇬🇪'],
     ['Central African Republic', 130, 0, 0, 0, 'Insignificant Powers', '🇨🇫'],
