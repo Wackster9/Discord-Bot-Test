@@ -33,6 +33,8 @@ module.exports.countries = [
 
    ['Poland', 1400, 10, 3, 0, 'Medium Powers', '🇵🇱'],
     ['The Netherlands', 1300, 5, 1, 0, 'Medium Powers', '🇳🇱'],
+    ['Algeria', 660, 22, 4, 0, 'Medium Powers', '🇩🇿'],
+    ['Ukraine', 920, 25, 5, 0, 'Medium Powers', '🇺🇦'],
 
     ['Romania', 520, 10, 2, 0, 'Minor Powers', '🇷🇴'],
     ['Belgium', 700, 4, 1, 0, 'Minor Powers', '🇧🇪'],
@@ -44,12 +46,10 @@ module.exports.countries = [
     ['Malaysia', 480, 13, 0, 60, 'Minor Powers', '🇲🇾'],
     ['Austria', 400, 3, 0, 20, 'Minor Powers', '🇦🇹'],
     ['Sweden', 420, 7, 3, 0, 'Minor Powers', '🇸🇪'],
-    ['Algeria', 660, 20, 4, 0, 'Minor Powers', '🇩🇿'],
     ['Ireland', 350, 5, 2, 0, 'Minor Powers', '🇮🇪'],
     ['Ethiopia', 400, 15, 2, 0, 'Minor Powers', '🇪🇹'],
     ['Colombia', 400, 15, 0, 0, 'Minor Powers', '🇨🇴'],
     ['Chile', 380, 10, 0, 0, 'Minor Powers', '🇨🇱'],
-    ['Ukraine', 920, 25, 5, 0, 'Minor Powers', '🇺🇦'],
     ['Peru', 520, 10, 0, 0, 'Minor Powers', '🇵🇪'],
     ['Finland', 400, 5, 2, 0, 'Minor Powers', '🇫🇮'],
     ['Czech Republic', 360, 5, 0, 0, 'Minor Powers', '🇨🇿'],
