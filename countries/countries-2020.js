@@ -17,7 +17,7 @@ module.exports.countries = [
     ['Spain', 2300, 15, 4, 0, 'Regional Powers', '🇪🇸'],
     ['Mexico', 1800, 20, 2, 0, 'Regional Powers', '🇲🇽'],
     ['Canada', 2200, 13, 5, 0, 'Regional Powers', '🇨🇦'],
-    ['Saudi Arabia', 1800, 28, 5, 0, 'Regional Powers', '🇸🇦'],
+    ['Saudi Arabia', 2560, 28, 5, 0, 'Regional Powers', '🇸🇦'],
     ['Israel', 1700, 35, 16, 0, 'Regional Powers', '🇮🇱'],
     ['Egypt', 1400, 30, 7, 0, 'Regional Powers', '🇪🇬'],
     ['Taiwan', 1600, 30, 7, 0, 'Regional Powers', '🇹🇼'],
