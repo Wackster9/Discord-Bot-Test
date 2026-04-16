@@ -327,39 +327,35 @@ client.once('ready', async () => {
 });
 
 client.on('interactionCreate', async interaction => {
-        if (!interaction.member) return;
-        try {
-                if (!games[interaction.guild.id]) games[interaction.guild.id] = new Game();
-                const game = games[interaction.guild.id];
-                if (interaction.isCommand()) {
-                        const command = commands[interaction.commandName];
-                        if (command?.interaction) {
-                                await command.interaction(interaction, game, Country, client);
-                        }
-                } else if (interaction.isButton()) {
-                        const [commandName] = interaction.customId.split('-');
-                        const command = commands[commandName];
-                        if (command?.button) {
+    if (!interaction.member) return;
+    try {
+        if (!games[interaction.guild.id]) games[interaction.guild.id] = new Game();
+        const game = games[interaction.guild.id];
 
-                                commands['loan'].button(interaction, game);
-
-                                console.log(`Button interaction received: ${interaction.customId}. Looking for command: ${commandName}`);
-                        }
-                } else if (interaction.isModalSubmit()) {
-                        // You will also need a modal handler
-                        const [modalName] = interaction.customId.split('-');
-                        const command = commands[modalName];
-                        if (command?.modal) {
-                                // await command.modal(interaction, game);
-                                console.log(`Modal submission received: ${interaction.customId}. Looking for command: ${modalName}`);
-                        }
-                }
-        } catch (err) {
-                const err_payload = { content: `There was an error while executing this command!\n${err}`, ephemeral: true };
-                console.log(err);
-                if (interaction.replied || interaction.deferred) interaction.followUp(err_payload);
-                else await interaction.reply(err_payload);
+        if (interaction.isCommand()) {
+            const command = commands[interaction.commandName];
+            if (command?.interaction) {
+                await command.interaction(interaction, game);
+            }
+        } else if (interaction.isButton()) {
+            const [commandName] = interaction.customId.split('-'); // e.g., "loan" from "loan-accept-123"
+            const command = commands[commandName];
+            if (command?.button) {
+                await command.button(interaction, game); // This calls the button function in loan.js
+            }
+        } else if (interaction.isModalSubmit()) {
+            const [commandName] = interaction.customId.split('-'); // e.g., "loan" from "loan-submitcustom-123"
+            const command = commands[commandName];
+            if (command?.modal) {
+                await command.modal(interaction, game); // This calls the modal function in loan.js
+            }
         }
+    } catch (err) {
+        const err_payload = { content: `There was an error while executing this command!\n${err}`, ephemeral: true };
+        console.log(err);
+        if (interaction.replied || interaction.deferred) interaction.followUp(err_payload);
+        else await interaction.reply(err_payload);
+    }
 });
 
 client.on('messageCreate', async msg => {
