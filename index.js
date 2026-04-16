@@ -340,9 +340,9 @@ client.on('interactionCreate', async interaction => {
                         const [commandName] = interaction.customId.split('-');
                         const command = commands[commandName];
                         if (command?.button) {
-                                // You will need to build out a button handler. A simple one might look like this:
-                                // commands['loan'].button(interaction, game);
-                                // For now, this assumes the command file is named after the first part of the customId.
+
+                                commands['loan'].button(interaction, game);
+
                                 console.log(`Button interaction received: ${interaction.customId}. Looking for command: ${commandName}`);
                         }
                 } else if (interaction.isModalSubmit()) {
