@@ -7,7 +7,7 @@ const crypto = require('crypto');
 // ==================================================================================
 //                            BUTTON HANDLER
 // ==================================================================================
-module.exports.button = async (interaction, game) => {
+module.exports.button = async (interaction, game, client) => {
     const [commandName, action, proposalId] = interaction.customId.split('-');
     const proposal = game.loanProposals.find(p => p.id === proposalId);
 
@@ -142,7 +142,7 @@ module.exports.button = async (interaction, game) => {
 // ==================================================================================
 //                            MODAL HANDLER
 // ==================================================================================
-module.exports.modal = async (interaction, game) => {
+module.exports.modal = async (interaction, game, client) => {
     const [modalName, action, proposalId] = interaction.customId.split('-');
 
     if (action === 'submitcustom') {
