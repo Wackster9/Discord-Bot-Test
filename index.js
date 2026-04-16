@@ -157,7 +157,7 @@ function aiSpend(country, guild, client) {
 	const tankCost = client.tankCost[guild] || 20;
 	const armyCost = 5;
 	const industryCost = 10;
-	const priorities = country.aiPriorities || client.aiPriorities[guild] || { army: 50, industry: 40, tank: 10 };
+	const priorities = country.aiPriorities || client.aiPriorities[guild] || { army: 30, industry: 60, tank: 10 };
 	let moneyToSpend = country.money;
 	const armyBudget = moneyToSpend * (priorities.army / 100);
 	const industryBudget = moneyToSpend * (priorities.industry / 100);
