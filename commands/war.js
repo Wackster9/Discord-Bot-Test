@@ -1,62 +1,93 @@
 const djs = require('discord.js');
 const settings = require('../settings.json');
+
 module.exports.interaction = async (interaction, game) => {
+
 	await interaction.deferReply();
-	const country = interaction.options.getString('country');
-	const armyAmount = interaction.options.getInteger('army');
+
+	const target = interaction.options.getString('target');
+	const c = game.getCountry(target);
+	const front = game.getFront(interaction.options.getString('front'));
 	const p = game.getPlayer(interaction.user.id);
-	const c = game.getCountry(country);
-	if (!game.started) return interaction.editReply('Quit being a quickshot there aint no game yet.');
-	if (!p) return interaction.editReply('No, you cannot roleplay as the UN intervention in Yugoslavia. Claim a country.');
-	if (!c) return interaction.editReply('Who you tryna war? Hyperborea?');
-	if (!p.active) return interaction.editReply('Quit hacking, this doesnt work anymore');
-	//if (!c.active) return interaction.editReply('Target country is inactive.');
-	//if (!c.pid) return interaction.editReply('This country is unclaimed.');
-	if (c.pid === interaction.user.id) return interaction.editReply('You cannot declare war on yourself.');
-	//Keep the comments if you want to allow players to fight unclaimed countries
-	if (armyAmount) {
-    if (armyAmount <= 0) return interaction.editReply('You cannot send 0 or negative soldiers.');
-    if (armyAmount > p.army) return interaction.editReply(`You only have ${p.army} army! You cannot send ${armyAmount}.`);
-}
-	if (p.army <= 0) return interaction.editReply('You have no army to fight with, genius.');
-	
-	const result = p.constructor.getWarResult(p, c, armyAmount);
-// ... right after 'const result = p.constructor.getWarResult(p, c);'
 
-// DECREMENT AND CLEAN UP BUFFS
-// Attacker's buffs
-p.tempAttackBuffs.forEach(buff => buff.uses--);
-p.tempAttackBuffs = p.tempAttackBuffs.filter(buff => buff.uses > 0);
+	if (!game.started)
+		return interaction.editReply('Quit being a quickshot there aint no game yet.');
+	if (!p)
+		return interaction.editReply('You haven\'t claimed a country.');
+	if (!c)
+		return interaction.editReply('That country does not exist.');
+	if (!front)
+		return interaction.editReply('That front does not exist.');
+	if (!p.active)
+		return interaction.editReply('Quit hacking, this doesnt work anymore');
+	if (c.pid === interaction.user.id)
+		return interaction.editReply('You are not allowed to kill yourself.');
+	if (p.country !== front.atkleader.country && p.country !== front.defleader.country)
+		return interaction.editReply('You are not a war leader.');
 
-// Defender's buffs
-c.tempDefenseBuffs.forEach(buff => buff.uses--);
-c.tempDefenseBuffs = c.tempDefenseBuffs.filter(buff => buff.uses > 0);
+	const result = front.getBattleResult(p.country, target);
+
+	if (!result) {
+		return interaction.editReply(
+			'Those countries are not on opposing sides of this front.'
+		);
+	}
+
+	const winnerMention = result.winner.pid
+		? `<@${result.winner.pid}>`
+		: ''; //if unclaimed
+
+	const loserMention = result.loser.pid
+		? `<@${result.loser.pid}>`
+		: ''; //if unclaimed
 
 	const embed = new djs.EmbedBuilder()
 		.setTimestamp()
 		.setColor(settings.color)
-		.setFooter({ text: `War started by ${interaction.member.displayName}`, iconURL: interaction.member.displayAvatarURL() })
-		.setTitle(`Battle Overview`)
+		.setFooter({
+			text: `War started by ${interaction.member.displayName}`,
+			iconURL: interaction.member.displayAvatarURL()
+		})
+		.setTitle('Battle Overview')
 		.setDescription(
-			`The battle between ${p.country} ${p.flag} and ${c.country} ${c.flag} has ended.\n\n${result.winner === p
-				? `${p.country} ${p.flag} <@${p.pid}> has beaten ${c.country} ${c.flag} <@${c.pid ? c.pid : 'unclaimed'
-				}> and won the battle.`
-				: `${c.country} ${c.flag} <@${c.pid ? c.pid : 'unclaimed'}> has held off against ${p.country} ${p.flag
-				} <@${p.pid}> and won the battle.`
-			}\n\n${p.country} ${p.flag} lost ${result.atkLoses} army.\n${c.country} ${c.flag} lost ${result.defLoses} army.`,
+			`${result.winner.country} ${result.winner.flag} ${winnerMention} ` +
+			`has defeated ${result.loser.country} ${result.loser.flag} ` +
+			`${loserMention} and won the battle.\n\n` +
+
+			`**Win Chance:** ${result.winChance}%\n\n` +
+
+			`${result.attacker.country} ${result.attacker.flag} ` +
+			`lost **${result.atkLoses} army**.\n` +
+
+			`${result.defender.country} ${result.defender.flag} ` +
+			`lost **${result.defLoses} army**.`
 		);
 
-	await interaction.editReply({ embeds: [embed] });
+	await interaction.editReply({
+		embeds: [embed]
+	});
 };
+
 module.exports.button = async interaction => { };
+
 module.exports.application_command = () => {
-    return new djs.SlashCommandBuilder()
-        .setName('war')
-        .setDescription('Start a battle against another country.')
-        .addStringOption(option =>
-            option.setName('country').setDescription('The target country.').setRequired(true)
-        )
-        .addIntegerOption(option => 
-            option.setName('army').setDescription('How much army to send (Default: All).').setRequired(false)
-        );
+
+	return new djs.SlashCommandBuilder()
+		.setName('war')
+		.setDescription('Start a battle on a front.')
+
+		.addStringOption(option =>
+			option
+				.setName('front')
+				.setDescription('The front you want to attack on')
+				.setRequired(true)
+		)
+
+		.addStringOption(option =>
+			option
+				.setName('target')
+				.setDescription('The country you want to attack')
+				.setRequired(true)
+		);
+
 };

@@ -13,16 +13,19 @@ module.exports.interaction = async (interaction, game) => {
 			{ name: 'Industry', value: `${country.industry}`, inline: true },
 			{ name: 'Army', value: `${country.army}`, inline: true },
 			{ name: 'Tanks', value: `${country.tank}`, inline: true },
-			{ name: 'War Score', value: `${country.army + Math.floor(country.army * (country.tank / 50))}`, inline: true },
 			{ name: 'Money', value: `${Math.floor(country.money)}`, inline: true },
+			{ name: 'Unallocated Army', value: `${country.army - country.assignedArmy}`, inline: true },
+			{ name: 'Unallocated Tanks', value: `${country.tank - country.assignedTanks}`, inline: true },
+			{ name: 'War Score', value: `${country.army + Math.floor(country.army * (country.tank / 50))}`, inline: true },
 			{ name: 'Type', value: `${country.type.slice(0, -1)}`, inline: true },
+			{ name: 'HP', value: `${country.hp}`, inline: true },
 		);
 	if (country.pid && country.active) embed.setDescription(`Claimed by <@${country.pid}>`);
 	else if (!country.active) embed.setDescription(`This country is inactive. Claimed by <@${country.pid}>`);
 	else embed.setDescription('This country is unclaimed.');
 	await interaction.editReply({ embeds: [embed] });
 };
-module.exports.button = async interaction => {};
+module.exports.button = async interaction => { };
 module.exports.application_command = () => {
 	return new djs.SlashCommandBuilder()
 		.setName('country-stats')

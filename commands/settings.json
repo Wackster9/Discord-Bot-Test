@@ -1,0 +1,14 @@
+{
+    "token": "MTI5MTQzMjQ5NDA2Mjg5NTIwNA.G8Zhb5.TAg5Q3NG2qU2tiwvaqcYgez7Ck4M8Dplk5kCas",
+    "color": "#4e59d5",
+    "maxCountryNameLength": 32,
+    "moneyIntervalInHours": 8,
+    "industryCost": 50,
+    "armyCost": 5,
+    "tankCost": 15,
+    "armyUpkeep": 0.2,
+    "tankUpkeep": 2,
+    "topCountriesNumber": 50,
+    "saveGameInMinutes": 10,
+    "minutesPerMonth": 120
+}

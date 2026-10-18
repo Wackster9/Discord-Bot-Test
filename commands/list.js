@@ -38,9 +38,26 @@ module.exports.interaction = async (interaction, game) => {
 	const embed = new djs.EmbedBuilder().setColor(settings.color);
 	let description = '';
 
+	const typeOrder = {
+		"Superpowers": 1,
+		"Major Powers": 2,
+		"Regional Powers": 3,
+		"Medium Powers": 4,
+		"Minor Powers": 5,
+		"Small Powers": 6,
+		"Insignificant Powers": 7,
+		"Irrelevant Powers": 8,
+		"Minor Insignificant Powers": 9,
+		"Very Minor Insignificant Powers": 10,
+		"Microstates": 11
+	};
+
+	countriesData.sort((a, b) => typeOrder[a[5]] - typeOrder[b[5]]);
+
 	for (let i = 0; i < countriesData.length; i++) {
 		const country = countriesData[i];
-		if (country[5] !== countriesData[i - 1]?.[5]) description += `\n**${country[5]}**\n`;
+		if (country[5] !== countriesData[i - 1]?.[5])
+			description += `\n**${country[5]}**\n\n`;
 		description += `${i + 1}. ${country[0]} ${country[6] || '🏳️'}`;
 		if (usingGameList) {
 			const countryObj = game.getCountry(country[0]);
@@ -79,16 +96,17 @@ module.exports.button = async interaction => { };
 module.exports.application_command = () => {
 	return new djs.SlashCommandBuilder()
 		.setName('list')
-		.setDescription('Lists all countries from a specific era, or current game if no era is chosen.')
+		.setDescription('Lists all countries from a specific date, or current game if no era is chosen.')
 		.addStringOption(opt =>
 			opt.setName('list_name')
-				.setDescription('The era to view (leave empty for current game)')
+				.setDescription('The date to view (leave empty for current game)')
 				.setRequired(false)
 				.addChoices(
 					{ name: '1848', value: 'countries-1848.js' },
 					{ name: '1910', value: 'countries-1910.js' },
 					{ name: '1919', value: 'countries-1919.js' },
 					{ name: '1933', value: 'countries-1933.js' },
+					{ name: '1936', value: 'countries-1936.js' },
 					{ name: '1947', value: 'countries-1947.js' },
 					{ name: '1962', value: 'countries-1962.js' },
 					{ name: '1985', value: 'countries-1985.js' },

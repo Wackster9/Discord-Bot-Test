@@ -1,58 +1,95 @@
 const djs = require('discord.js');
 const settings = require('../settings.json');
+
 module.exports.interaction = async (interaction, game) => {
+
 	await interaction.deferReply();
-	const attackerCountry = interaction.options.getString('attacker');
-	const defenderCountry = interaction.options.getString('defender');
 
+	const target = interaction.options.getString('target');
+	const c = game.getCountry(target);
+	const front = game.getFront(interaction.options.getString('front'));
+	const attacker = interaction.options.getString('attacker');
+	const a = game.getCountry(attacker);
 
-	const attacker = game.getCountry(attackerCountry);
-	const defender = game.getCountry(defenderCountry);
+	if (!game.started)
+		return interaction.editReply('Quit being a quickshot there aint no game yet.');
+	if (!a)
+		return interaction.editReply('You haven\'t claimed a country.');
+	if (!c)
+		return interaction.editReply('That country does not exist.');
+	if (!front)
+		return interaction.editReply('That front does not exist.');
+	if (a !== front.atkleader && a !== front.defleader)
+		return interaction.editReply('Attacking country isn\'t a war leader');
 
-	if (!game.started) return interaction.editReply('Quit being a quickshot there aint no game yet.');
-	if (!attacker) return interaction.editReply('Invalid attacking country specified.');
-	if (!defender) return interaction.editReply('Who you tryna war? Hyperborea?');
-	if (attacker.country === defender.country) return interaction.editReply('Thats the same country.');
+	const result = front.getBattleResult(attacker, target);
 
-	const result = attacker.constructor.getWarResult(attacker, defender);
-	// DECREMENT AND CLEAN UP BUFFS
-	// Attacker's buffs
-	attacker.tempAttackBuffs.forEach(buff => buff.uses--);
-	attacker.tempAttackBuffs = attacker.tempAttackBuffs.filter(buff => buff.uses > 0);
+	if (!result) {
+		return interaction.editReply(
+			'Those countries are not on opposing sides of this front.'
+		);
+	}
 
-	// Defender's buffs
-	defender.tempDefenseBuffs.forEach(buff => buff.uses--);
-	defender.tempDefenseBuffs = defender.tempDefenseBuffs.filter(buff => buff.uses > 0);
+	const winnerMention = result.winner.pid
+		? `<@${result.winner.pid}>`
+		: ''; //if unclaimed
+
+	const loserMention = result.loser.pid
+		? `<@${result.loser.pid}>`
+		: ''; //if unclaimed
+
 	const embed = new djs.EmbedBuilder()
 		.setTimestamp()
 		.setColor(settings.color)
-		.setFooter({ text: `War started by ${interaction.member.displayName}`, iconURL: interaction.member.displayAvatarURL() })
-		.setTitle(`Battle Overview`)
+		.setFooter({
+			text: `War started by ${interaction.member.displayName}`,
+			iconURL: interaction.member.displayAvatarURL()
+		})
+		.setTitle('Battle Overview')
 		.setDescription(
-			`The battle between ${attacker.country} ${attacker.flag} and ${defender.country} ${defender.flag} has ended.\n\n${result.winner === attacker
-				? `${attacker.country} ${attacker.flag} <@${attacker.pid}> has beaten ${defender.country} ${defender.flag} <@${defender.pid ? defender.pid : 'unclaimed'
-				}> and won the battle.`
-				: `${defender.country} ${defender.flag} <@${defender.pid ? defender.pid : 'unclaimed'}> has held off against ${attacker.country} ${attacker.flag
-				} <@${attacker.pid}> and won the battle.`
-			}\n\n${attacker.country} ${attacker.flag} lost ${result.atkLoses} army.\n${defender.country} ${defender.flag} lost ${result.defLoses} army.`,
+			`${result.winner.country} ${result.winner.flag} ${winnerMention} ` +
+			`has defeated ${result.loser.country} ${result.loser.flag} ` +
+			`${loserMention} and won the battle.\n\n` +
+
+			`**Win Chance:** ${result.winChance}%\n\n` +
+
+			`${result.attacker.country} ${result.attacker.flag} ` +
+			`lost **${result.atkLoses} army**.\n` +
+
+			`${result.defender.country} ${result.defender.flag} ` +
+			`lost **${result.defLoses} army**.`
 		);
 
-	await interaction.editReply({ embeds: [embed] });
+	await interaction.editReply({
+		embeds: [embed]
+	});
 };
+
 module.exports.button = async interaction => { };
+
 module.exports.application_command = () => {
+
 	return new djs.SlashCommandBuilder()
 		.setName('forcewar')
-		.setDescription('Use this to force wars. You know what they say, RH Sports, its in the name.')
-		.setDefaultMemberPermissions(djs.PermissionsBitField.Flags.Administrator)
+		.setDescription('Start a battle on a front.')
+		.setDefaultMemberPermissions((djs.PermissionsBitField.Flags.Administrator))
 		.addStringOption(option =>
-			option.setName('attacker')
-				.setDescription('The name or number of your country that will attack.')
+			option
+				.setName('front')
+				.setDescription('The front you want to attack on')
 				.setRequired(true)
 		)
 		.addStringOption(option =>
-			option.setName('defender')
-				.setDescription('The name or number of the country you want to attack.')
+			option
+				.setName('attacker')
+				.setDescription('the attaacking country')
+				.setRequired(true)
+		)
+		.addStringOption(option =>
+			option
+				.setName('target')
+				.setDescription('The country you want to attack')
 				.setRequired(true)
 		);
+
 };

@@ -7,7 +7,8 @@ module.exports.interaction = async (interaction, game) => {
 	const country = game.getPlayer(interaction.user.id);
 
 	if (!country) return await interaction.editReply('You do not have a country claimed!');
-
+	if(parseInt(name).toString() == name)
+        return await interaction.editReply('You cannot name your country a number.');
 	country.country = name;
 
 	const embed = new djs.EmbedBuilder()

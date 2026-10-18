@@ -3,7 +3,7 @@
     "color": "#4e59d5",
     "maxCountryNameLength": 32,
     "moneyIntervalInHours": 8,
-    "industryCost": 50,
+    "industryCost": 10,
     "armyCost": 5,
     "tankCost": 15,
     "armyUpkeep": 0.2,

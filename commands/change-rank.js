@@ -2,7 +2,7 @@ const djs = require('discord.js');
 const settings = require('../settings.json');
 
 module.exports.interaction = async (interaction, game) => {
-    await interaction.deferReply({ ephemeral: true });
+    await interaction.deferReply();
 
     const countryName = interaction.options.getString('country');
     const newType = interaction.options.getString('type');
@@ -17,6 +17,7 @@ module.exports.interaction = async (interaction, game) => {
 
     // Update the type
     country.type = newType;
+    country.updateHP();
 
     const embed = new djs.EmbedBuilder()
         .setColor(settings.color)
@@ -46,5 +47,4 @@ module.exports.application_command = () => {
                 .setDescription('The new type for the country')
                 .setRequired(true)
         )
-        .setDefaultMemberPermissions(djs.PermissionsBitField.Flags.Administrator);
 };
