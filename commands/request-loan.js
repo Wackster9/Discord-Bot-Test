@@ -33,14 +33,12 @@ module.exports.interaction = async (interaction, game) => {
     if (!game.loanProposals) game.loanProposals = [];
     game.loanProposals.push(proposal);
 
-    const row = new ActionRowBuilder()
+     const row = new ActionRowBuilder()
         .addComponents(
-            // The customId starts with 'loan-' so it's handled by your loan.js file
-            new ButtonBuilder().setCustomId(`loan-approve-standard-${proposalId}`).setLabel('Approve (Standard Terms)').setStyle(ButtonStyle.Success),
-            new ButtonBuilder().setCustomId(`loan-propose-custom-${proposalId}`).setLabel('Propose Custom Terms').setStyle(ButtonStyle.Primary),
-            new ButtonBuilder().setCustomId(`loan-decline-${proposalId}`).setLabel('Decline').setStyle(ButtonStyle.Danger)
+            new ButtonBuilder().setCustomId(`loan_approvestandard_${proposalId}`).setLabel('Approve (Standard Terms)').setStyle(ButtonStyle.Success),
+            new ButtonBuilder().setCustomId(`loan_proposecustom_${proposalId}`).setLabel('Propose Custom Terms').setStyle(ButtonStyle.Primary),
+            new ButtonBuilder().setCustomId(`loan_decline_${proposalId}`).setLabel('Decline').setStyle(ButtonStyle.Danger)
         );
-
     await interaction.reply({ content: `Your loan request for **$${amount.toLocaleString()}** has been sent to **${target.country}**.`, ephemeral: true });
 
     try {
