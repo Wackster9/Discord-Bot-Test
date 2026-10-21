@@ -1,9 +1,9 @@
-// commands/default.js
+// commands/default-on-loan.js
 const { SlashCommandBuilder } = require('discord.js');
 
 module.exports.application_command = () => {
     return new SlashCommandBuilder()
-        .setName('default')
+        .setName('default-on-loan')
         .setDescription('Refuse to pay your debt to a specific country. This is a hostile act.')
         .addStringOption(option =>
             option.setName('target')
@@ -12,7 +12,7 @@ module.exports.application_command = () => {
         );
 };
 
-module.exports.interaction = async (interaction, game) => {
+module.exports.interaction = async (interaction, game, Country, Front, client) => {
     const borrower = game.getPlayer(interaction.user.id);
     if (!borrower) {
         return interaction.reply({ content: 'You must control a country to default on its debts.', ephemeral: true });
