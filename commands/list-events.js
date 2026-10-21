@@ -1,6 +1,6 @@
 const djs = require('discord.js');
 
-module.exports.interaction = async (interaction, game, Country, client) => {
+module.exports.interaction = async (interaction, game, Country, Front, client) => {
 
     const events = client.economicEvents[interaction.guild.id] || [];
 
