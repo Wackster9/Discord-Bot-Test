@@ -8,7 +8,10 @@ const crypto = require('crypto');
 //                            BUTTON HANDLER
 // ==================================================================================
 module.exports.button = async (interaction, game, client) => {
-    const [commandName, action, proposalId] = interaction.customId.split('-');
+    const parts = interaction.customId.split('_');
+    const action = parts[1];
+    const proposalId = parts.slice(2).join('_');
+    
     const proposal = game.loanProposals.find(p => p.id === proposalId);
 
     if (!proposal) {
@@ -16,7 +19,6 @@ module.exports.button = async (interaction, game, client) => {
     }
 
     switch (action) {
-        // Case: A borrower accepts an offer.
         case 'accept': {
             const borrower = game.getCountry(proposal.borrower);
             const lender = game.getCountry(proposal.lender);
@@ -54,7 +56,6 @@ module.exports.button = async (interaction, game, client) => {
             break;
         }
 
-        // Case: Anyone declines anything.
         case 'decline': {
             const playerIsBorrower = game.getPlayer(interaction.user.id)?.country === proposal.borrower;
             const playerIsLender = game.getPlayer(interaction.user.id)?.country === proposal.lender;
@@ -62,34 +63,29 @@ module.exports.button = async (interaction, game, client) => {
             if (!playerIsBorrower && !playerIsLender) {
                 return interaction.reply({ content: "This is not your decision to make.", ephemeral: true });
             }
-            
+
             game.loanProposals = game.loanProposals.filter(p => p.id !== proposalId);
             await interaction.update({ content: '❌ **Offer Declined.**', components: [] });
             break;
         }
 
-        // Case: Lender approves a request with standard, pre-defined terms.
         case 'approvestandard': {
-            // YOU MUST DEFINE "STANDARD TERMS" HERE
-            const STANDARD_INTEREST_RATE = 0.05; // 5%
-            const STANDARD_PAYMENT_RATE = 0.10; // 10%
+            const STANDARD_INTEREST_RATE = 0.05; 
+            const STANDARD_PAYMENT_RATE = 0.10; 
 
             proposal.interestRate = STANDARD_INTEREST_RATE;
             proposal.paymentRate = STANDARD_PAYMENT_RATE;
-            proposal.type = 'offer'; // It's now a firm offer
+            proposal.type = 'offer'; 
 
-            // Re-route to the 'accept' logic to avoid duplicating code.
-            // This is a bit of a hack, but it works. We pretend it's a new proposal.
-            // First, send the confirmation to the borrower:
             const borrower = game.getCountry(proposal.borrower);
-            
+
             const row = new ActionRowBuilder().addComponents(
-                new ButtonBuilder().setCustomId(`loan-accept-${proposal.id}`).setLabel('Accept Standard Terms').setStyle(ButtonStyle.Success),
-                new ButtonBuilder().setCustomId(`loan-decline-${proposal.id}`).setLabel('Decline').setStyle(ButtonStyle.Danger)
+                new ButtonBuilder().setCustomId(`loan_accept_${proposal.id}`).setLabel('Accept Standard Terms').setStyle(ButtonStyle.Success),
+                new ButtonBuilder().setCustomId(`loan_decline_${proposal.id}`).setLabel('Decline').setStyle(ButtonStyle.Danger)
             );
 
             await interaction.update({ content: `You have approved the loan with standard terms. Waiting for **${borrower.country}** to confirm.`, components: []});
-            
+
             try {
                 const borrowerUser = await interaction.client.users.fetch(borrower.pid);
                 borrowerUser.send({
@@ -100,7 +96,6 @@ module.exports.button = async (interaction, game, client) => {
             break;
         }
 
-        // Case: Lender wants to create a custom offer.
         case 'proposecustom': {
             const lender = game.getCountry(proposal.lender);
             if (interaction.user.id !== lender.pid) {
@@ -108,7 +103,7 @@ module.exports.button = async (interaction, game, client) => {
             }
 
             const modal = new ModalBuilder()
-                .setCustomId(`loan-submitcustom-${proposalId}`)
+                .setCustomId(`loan_submitcustom_${proposalId}`)
                 .setTitle('Propose Custom Loan Terms');
 
             modal.addComponents(
@@ -129,7 +124,7 @@ module.exports.button = async (interaction, game, client) => {
                         .setRequired(true)
                 )
             );
-            
+
             await interaction.showModal(modal);
             break;
         }
@@ -143,7 +138,9 @@ module.exports.button = async (interaction, game, client) => {
 //                            MODAL HANDLER
 // ==================================================================================
 module.exports.modal = async (interaction, game, client) => {
-    const [modalName, action, proposalId] = interaction.customId.split('-');
+    const parts = interaction.customId.split('_');
+    const action = parts[1];
+    const proposalId = parts.slice(2).join('_');
 
     if (action === 'submitcustom') {
         const proposal = game.loanProposals.find(p => p.id === proposalId);
@@ -163,8 +160,8 @@ module.exports.modal = async (interaction, game, client) => {
         const borrower = game.getCountry(proposal.borrower);
 
         const row = new ActionRowBuilder().addComponents(
-            new ButtonBuilder().setCustomId(`loan-accept-${proposal.id}`).setLabel('Accept Counter-Offer').setStyle(ButtonStyle.Success),
-            new ButtonBuilder().setCustomId(`loan-decline-${proposal.id}`).setLabel('Decline Counter-Offer').setStyle(ButtonStyle.Danger)
+            new ButtonBuilder().setCustomId(`loan_accept_${proposal.id}`).setLabel('Accept Counter-Offer').setStyle(ButtonStyle.Success),
+            new ButtonBuilder().setCustomId(`loan_decline_${proposal.id}`).setLabel('Decline Counter-Offer').setStyle(ButtonStyle.Danger)
         );
 
         await interaction.reply({ content: 'Your counter-offer has been sent to the borrower.', ephemeral: true });
