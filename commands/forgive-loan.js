@@ -18,7 +18,7 @@ module.exports.application_command = () => {
         );
 };
 
-module.exports.interaction = async (interaction, game) => {
+module.exports.interaction = async (interaction, game, Country, Front, client) => {
     const lender = game.getPlayer(interaction.user.id);
     if (!lender) return interaction.reply({ content: 'You must control a country to forgive debt.', ephemeral: true });
 
