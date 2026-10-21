@@ -27,7 +27,7 @@ module.exports.interaction = async (interaction, game, Country, Front, client) =
 
 module.exports.application_command = () => {
     return new djs.SlashCommandBuilder()
-        .setName('cancel-event')
+        .setName('cancel-events')
         .setDescription('Cancels an active economic event by its ID.')
         .addStringOption(option => option.setName('id').setDescription('The ID of the event to cancel (use /list-events).').setRequired(true));
 };
