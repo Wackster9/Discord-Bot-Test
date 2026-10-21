@@ -728,15 +728,15 @@ setInterval(async () => {
 				active: front.active
 			}));
 
-			saveObj.others = {
-				started: client.gameStart[guild],
-				yearStart: client.yearStart[guild],
-				tankCost: client.tankCost[guild],
-				tankUpkeep: client.tankUpkeep[guild],
-				armyUpkeep: client.armyUpkeep[guild],
-				minutesPerMonth: client.minutesPerMonth[guild]
-			};
-
+			                        saveObj.others = {
+                                started: client.gameStart[guild],
+                                yearStart: client.yearStart[guild],
+                                tankCost: client.tankCost[guild],
+                                tankUpkeep: client.tankUpkeep[guild],
+                                armyUpkeep: client.armyUpkeep[guild],
+                                minutesPerMonth: client.minutesPerMonth[guild],
+                                economicEvents: client.economicEvents[guild] || []
+                        };
 			fs.writeFileSync(
 				`./saves/${guild}.json`,
 				JSON.stringify(saveObj)
