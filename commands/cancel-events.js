@@ -1,6 +1,6 @@
 const djs = require('discord.js');
 
-module.exports.interaction = async (interaction, game, Country, client) => {
+module.exports.interaction = async (interaction, game, Country, Front, client) => {
 
     if (!interaction.member.permissions.has(djs.PermissionFlagsBits.ManageGuild)) {
         return interaction.reply({ content: 'Only admins can cancel events.', ephemeral: true });
