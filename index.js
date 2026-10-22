@@ -22,6 +22,14 @@ const LOGGED_COMMANDS = [
 	'send-money',
 	'send-tank',
 	'join-front',
+        'economic-event',
+        'cancel-event',
+        'list-events',
+        'request-loan',
+        'default-on-loan',
+        'forgive-loan',
+        'pay-debt',
+        'list-loans'
 ];
 async function logBotMessage(interaction, message, action) {
 	if (!BOT_LOG_CHANNEL_ID || BOT_LOG_CHANNEL_ID === 'PUT_BOT_LOG_CHANNEL_ID_HERE') return;
