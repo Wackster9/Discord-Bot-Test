@@ -883,14 +883,29 @@ client.on('interactionCreate', async interaction => {
 				);
 			}
 
-		} else if (interaction.isButton()) {
+		} else if (interaction.isButton() || interaction.isModalSubmit()) {
+			// This safely extracts the command name whether you used hyphens or underscores
+			const commandName = interaction.customId.includes('_') 
+				? interaction.customId.split('_')[0] 
+				: interaction.customId.split('-')[0];
 
-			const command =
-				commands[interaction.customId.split('-')[0]];
+			const command = commands[commandName];
 
-			if (command?.button) {
+			if (interaction.isButton() && command?.button) {
 				await command.button(
-					createLoggedInteraction(interaction)
+					createLoggedInteraction(interaction),
+					game,
+					Country,
+					Front,
+					client // <--- THIS IS WHAT PREVENTS YOUR CRASH
+				);
+			} else if (interaction.isModalSubmit() && command?.modal) {
+				await command.modal(
+					createLoggedInteraction(interaction),
+					game,
+					Country,
+					Front,
+					client // <--- AND THIS
 				);
 			}
 		}
